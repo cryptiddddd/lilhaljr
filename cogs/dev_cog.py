@@ -48,6 +48,14 @@ class DevCog(commands.Cog, name="Dev"):
         config.quiet_phrases.append(new_phrase.lower())
         await self.bot.thumbs_up(ctx.message)
 
+    @commands.command(name="ping")
+    async def command_ping(self, ctx: commands.Context):
+        """
+        Pings to test Hal's response.
+        :param ctx:
+        """
+        await self.bot.thumbs_up(ctx.message)
+
 
 def setup(bot: LilHalJr) -> None:
     """

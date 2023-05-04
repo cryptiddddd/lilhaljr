@@ -83,7 +83,7 @@ class LilHalJr(commands.Bot):
         :param message:
         :return:
         """
-        await self.pause(1, len(message.content) // 5)
+        await self.pause(1, len(message.content) // 6)
         await message.add_reaction('👍')
 
     async def wait_loop(self, message: discord.Message) -> None:

@@ -6,9 +6,9 @@ charset-normalizer==3.1.0
 frozenlist==1.3.3
 idna==3.4
 multidict==6.0.4
-pip==22.3.1
+pip==23.1.2
 py-cord==2.4.1
 python-dotenv==1.0.0
-setuptools==65.5.1
-wheel==0.38.4
+setuptools==67.7.2
+wheel==0.40.0
 yarl==1.9.2
