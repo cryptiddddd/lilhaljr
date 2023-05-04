@@ -4,6 +4,12 @@ from discord.ext import commands
 from bot import LilHalJr
 import config
 
+# Get logging stuff.
+if config.LOGGING:
+    import logging
+
+    logger = logging.getLogger("lilhaljr")
+
 
 class DevCog(commands.Cog, name="Dev"):
     """
@@ -23,6 +29,20 @@ class DevCog(commands.Cog, name="Dev"):
         :return: True if allowed.
         """
         return await self.bot.is_owner(ctx.author)
+
+    @commands.command(name="channels")
+    async def command_channels(self, ctx: commands.Context):
+        """
+        Hal logs quiet channels, reacts with a thumbs up.
+        """
+        await self.bot.thumbs_up(ctx.message)
+
+        # This comment is redundant without logging enabled.
+        if config.LOGGING:
+            channels = [self.bot.get_channel(i) for i in self.bot.quiet_channels]
+            message = "Quiet channels are: " + ", ".join([ch.name for ch in channels])
+
+            logger.info(message)
 
     @commands.command(name="goodnight")
     async def command_good_night(self, ctx: commands.Context):
@@ -45,8 +65,11 @@ class DevCog(commands.Cog, name="Dev"):
         :param ctx:
         :param new_phrase: A phrase to add to `quiet_keywords`.
         """
-        config.quiet_phrases.append(new_phrase.lower())
+        config.quiet_phrases.add(new_phrase.lower())
         await self.bot.thumbs_up(ctx.message)
+
+        if config.LOGGING:
+            logger.debug(f"Quiet key phrases: {config.quiet_phrases}")
 
     @commands.command(name="ping")
     async def command_ping(self, ctx: commands.Context):
