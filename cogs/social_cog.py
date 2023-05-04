@@ -121,7 +121,8 @@ class SocialCog(commands.Cog, name="Social"):
         """
         # Say hello
         channel = await self.__find_channel_by_keyword(guild, "general")
-        await self.say_hello(channel)
+        if channel is not None:
+            await self.say_hello(channel)
 
         # Introduce self.
         channel = await self.__find_channel_by_keyword(guild, "intro")
