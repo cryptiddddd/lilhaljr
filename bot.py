@@ -1,101 +1,131 @@
-import os
 import asyncio
-from dotenv import load_dotenv
-import datetime as dt
+import random
 
 import discord
 from discord.ext import commands
 
-from random import random, randint, choice
-
-load_dotenv()
-TOKEN = os.getenv("DISCORD_TOKEN")
-
-# this could just be a client, i do not know if it needs to be a bot, but ok!
-#   having owner-only commands could be a good idea for manually muting hal from an entire server, etc
-lil_hal_junior = commands.Bot(command_prefix=None, intents=discord.Intents.all(), case_insensitive=True)
-
-RESPONSES = ["Hmm.", "Yes.", "Interesting."]
-SHUT_UP_QUERIES = ["hush", "shut up", "be quiet", "go away"]
-quiet_channels = []
+import config
 
 
-def timestamp() -> str:
-    return dt.datetime.now().strftime('[%m/%d/%Y | %H:%M:%S]')
-
-
-# ------------------------------ EVENTS ------------------------------ #
-@lil_hal_junior.event
-async def on_ready():
+class LilHalJr(commands.Bot):
     """
-    Once connected, Lil Hal Junior sets his status to "online". The console prints a list of connected servers.
+    Lil Hal Jr.
     """
-    await lil_hal_junior.change_presence(status=discord.Status.online)
+    def __init__(self):
+        """
+        Initialize Lil Hal Jr. No command/prefix, all intents, case insensitive.
+        """
+        self.quiet_channels = set()
+        super().__init__(command_prefix="^", intents=discord.Intents.all(), case_insensitive=True)
 
-    stamp = timestamp()
-    message = f"{stamp} {lil_hal_junior.user.name} has connected to:"
-    whitespace = " " * (len(stamp) + 1)
-    connect = "\n" + whitespace + " " * 6
-    print(message, connect.join([""] + [g.name for g in lil_hal_junior.guilds]))
+    @property
+    def dialogue(self) -> str:
+        """ Returns Lil Hal Junior's famous catchphrase. """
+        if not random.randint(0, 199):
+            return "Oh."
 
+        return random.choice(["Hmm.", "Yes.", "Interesting."])
 
-@lil_hal_junior.event
-async def on_guild_join(guild: discord.Guild):
-    print(f"{timestamp()} {lil_hal_junior.user.name} has joined {guild.name}!")
+    def is_referenced(self, message: discord.Message) -> bool:
+        """
+        Checks if Hal is mentioned/referenced in the given message.
+        :param message:
+        :return: True if Hal is pinged, or mentioned by name.
+        """
+        return self.user.mentioned_in(message) or "hal" in message.content.lower().split()
 
+    async def be_quiet(self, message: discord.Message) -> bool:
+        """
+        Reads a message and parses for a request to be quiet.
+        :param message:
+        :return: True if Hal has been told to be quiet.
+        """
+        # Not talking to Hal.
+        if not self.is_referenced(message):
+            return False
 
-@lil_hal_junior.event
-async def on_guild_remove(guild: discord.Guild):
-    print(f"{timestamp()} {lil_hal_junior.user.name} has left {guild.name}!")
+        # Check for keywords.
+        original = message.content.lower()
 
+        for query in config.quiet_phrases:
+            if query in original:
+                return True
 
-@lil_hal_junior.event
-async def on_message(message: discord.Message):
-    """
-    On receiving a message, Lil Hal Junior decides whether to respond. If he is mentioned in a message, he will respond
-    sooner rather than later. After a randomized moment of time without receiving a message, he sends one of three
-    responses.
-    :param message:
-    :return:
-    """
-    # If Hal has been muted in the channel, he will not say anything, nothing will happen.
-    if message.channel.id in quiet_channels:
-        return
+        return False
 
-    # If Hal is referenced and told to shut up, he will give a stoic thumbs up, and cease chatter for about 58 minutes.
-    if "hal" in message.content.lower().split():
-        for cue in SHUT_UP_QUERIES:
-            if cue in message.content.lower():
-                await message.add_reaction('👍')
-                quiet_channels.append(message.channel.id)
+    async def speak_in(self, channel: discord.TextChannel, statement: str = None) -> None:
+        """
+        Hal speaks in a channel. Expects that `quiet_channels` have already been checked.
+        :param channel:
+        :param statement:
+        :return:
+        """
+        # Possible overwrite.
+        message = self.dialogue if statement is None else statement
 
-                await asyncio.sleep(3600 + randint(-900, 900))
+        # Send.
+        await channel.trigger_typing()
+        await asyncio.sleep(random.randint(1, len(message) // 3) + random.random())
 
-                quiet_channels.remove(message.channel.id)
-                return
+        await channel.send(message)
 
-    # If it is Hal talking, or if the message isn't interesting enough, he will say nothing.
-    if message.author == lil_hal_junior.user or len(message.content) < 10:
-        return
+    async def thumbs_up(self, message: discord.Message) -> None:
+        """
+        Reacts to the given message with an ice-cold thumbs up.
+        :param message:
+        :return:
+        """
+        await asyncio.sleep(random.randint(1, len(message.content) // 4) + random.random())
+        await message.add_reaction('👍')
 
-    # If Hal is mentioned, with more than just a ping, he will wait a moment before responding.
-    elif lil_hal_junior.user.mentioned_in(message):
-        if message.content.strip() == f"<@!{lil_hal_junior.user.id}>":
+    async def wait_loop(self, message: discord.Message) -> None:
+        """
+        The main event. Waiting loop, eventually speaks if/when it times out.
+        :param message:
+        :type message:
+        :return:
+        :rtype:
+        """
+        wait = random.randint(1, 4) if self.is_referenced(message) else None
+
+        def check(channel: discord.TextChannel, *args) -> bool:
+            """ Simple check. Return `True` extends the wait. """
+            return channel == message.channel
+
+        # This is the cycle of waiting that decides when he will acknowledge/participate in conversation.
+        try:
+            await self.wait_for('typing', check=check, timeout=wait or random.randint(9, 25) + random.random())
+        except asyncio.TimeoutError:
+            await self.speak_in(message.channel)
+
+    async def on_ready(self):
+        """
+        Once connected, Lil Hal Junior sets his status to "online".
+        """
+        await self.change_presence(status=discord.Status.online)
+
+    async def on_message(self, message: discord.Message):
+        """
+        Lil Hal Junior waits for a gap in conversation to say something
+        :param message:
+        """
+        await self.process_commands(message)
+
+        # If Hal has been muted in the channel, he will not say anything, nothing will happen.
+        if message.channel.id in self.quiet_channels or message.author == self.user:
             return
 
-        await asyncio.sleep(randint(1, 4))
-        await message.channel.send(choice(RESPONSES))
-        return
+        elif await self.be_quiet(message):
+            await self.thumbs_up(message)
 
-    def check(m):
-        return m.channel == message.channel
+            self.quiet_channels.add(message.channel.id)
+            await asyncio.sleep(3600 + random.randint(-900, 900))
+            self.quiet_channels.discard(message.channel.id)
 
-    # This is the cycle of waiting that decides when he will acknowledge/participate in conversation.
-    try:
-        await lil_hal_junior.wait_for('message', check=check, timeout=randint(13, 25) + random())
-    except asyncio.TimeoutError:
-        await message.channel.send(choice(RESPONSES))
+        # If the message isn't interesting enough, he will say nothing.
+        elif len(message.content) < 10:
+            return
 
-
-# ------------------------------ RUN ------------------------------ #
-lil_hal_junior.run(TOKEN)
+        # The main event.
+        else:
+            await self.wait_loop(message)
