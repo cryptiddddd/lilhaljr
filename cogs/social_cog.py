@@ -25,6 +25,7 @@ class SocialCog(commands.Cog, name="Social"):
         :param condition: A callable function that takes a text channel for input, and returns a bool
         :return: Suitable channel.
         """
+        # Check bot arena first.
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
@@ -67,7 +68,8 @@ class SocialCog(commands.Cog, name="Social"):
         for command in coms:
             await self.bot.speak_in(channel, f"%{command}")
 
-            await asyncio.sleep(random.randint())
+            # await asyncio.sleep(random.randint()) # need to be sure that hal doesn't come back in
+            # in the middle of a conversation.
 
 
 def setup(bot: LilHalJr) -> None:

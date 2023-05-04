@@ -69,7 +69,8 @@ class LilHalJr(commands.Bot):
 
         await channel.send(message)
 
-    async def thumbs_up(self, message: discord.Message) -> None:
+    @staticmethod
+    async def thumbs_up(message: discord.Message) -> None:
         """
         Reacts to the given message with an ice-cold thumbs up.
         :param message:
@@ -129,3 +130,9 @@ class LilHalJr(commands.Bot):
         # The main event.
         else:
             await self.wait_loop(message)
+
+    @commands.Cog.listener()
+    async def on_guild_remove(self, guild: discord.Guild):
+        # Clear all silenced channels.
+        for channel in guild.channels:
+            self.quiet_channels.discard(channel.id)

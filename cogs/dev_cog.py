@@ -1,3 +1,7 @@
+import asyncio
+import random
+
+import discord
 from discord.ext import commands
 
 from bot import LilHalJr
@@ -9,6 +13,10 @@ class DevCog(commands.Cog, name="Dev"):
     Dev cog holds a secret interface for the developer and the developer only.
     """
     def __init__(self, bot: LilHalJr):
+        """
+        Initializes cog, connects to Hal.
+        :param bot: Expected Lil Hal Jr.
+        """
         self.bot = bot
 
     async def cog_check(self, ctx: commands.Context) -> bool:
@@ -18,6 +26,19 @@ class DevCog(commands.Cog, name="Dev"):
         :return: True if allowed.
         """
         return await self.bot.is_owner(ctx.author)
+
+    @commands.command(name="goodnight")
+    async def command_good_night(self, ctx: commands.Context):
+        """
+        Disconnects Lil Hal Jr safely.
+        :param ctx:
+        """
+        await self.bot.thumbs_up(ctx.message)
+
+        await asyncio.sleep(random.randint(1, 2) + random.random())
+        await self.bot.change_presence(status=discord.Status.offline)
+
+        await self.bot.close()
 
     @commands.command(name="keyword")
     async def command_add_keyword(self, ctx: commands.Context, *, new_phrase: str):

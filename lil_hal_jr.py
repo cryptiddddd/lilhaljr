@@ -20,5 +20,5 @@ if __name__ == "__main__":
     if config.LOGGING:
         lil_hal.load_extension("cogs.logging_cog")
 
-    # Run!
+    # Run.
     lil_hal.run(os.getenv("DISCORD_TOKEN"))

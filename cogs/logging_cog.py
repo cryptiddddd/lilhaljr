@@ -54,10 +54,6 @@ class LogCog(commands.Cog, name="Logs"):
     async def on_guild_remove(self, guild: discord.Guild):
         logger.info(f"{self.bot.user.name} left `{guild.name}`.")
 
-        # Clear all silenced channels.
-        for channel in guild.channels:
-            self.bot.quiet_channels.discard(channel.id)
-
     @commands.Cog.listener()
     async def on_command(self, ctx: commands.Context):
         """ Reports command use. """
