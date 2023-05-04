@@ -35,7 +35,7 @@ class SocialCog(commands.Cog, name="Social"):
         """
         # Search for a general chat with enabled permissions.
         for channel in guild.text_channels:
-            if channel.can_send(discord.Message) and "general" in channel.name:
+            if channel.can_send(discord.Message) and "general" in channel.name.lower():
                 break
         else:
             return
