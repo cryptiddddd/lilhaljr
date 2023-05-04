@@ -53,43 +53,48 @@ class LilHalJr(commands.Bot):
 
         return False
 
+    async def pause(self, low: int = 5, high: int = 20) -> None:
+        """ Pausing shortcut, using asyncio.sleep(). """
+        await asyncio.sleep(random.randint(low, high) + random.random())
+
     async def speak_in(self, channel: discord.TextChannel, statement: str = None) -> None:
         """
-        Hal speaks in a channel. Expects that `quiet_channels` have already been checked.
+        Hal speaks in a channel.
         :param channel:
         :param statement:
         :return:
         """
+        # Safety, possible double safety.
+        if channel.id in self.quiet_channels:
+            return
+
         # Possible overwrite.
         message = self.dialogue if statement is None else statement
 
         # Send.
         await channel.trigger_typing()
-        await asyncio.sleep(random.randint(1, len(message) // 3) + random.random())
+        await self.pause(1, len(message) // 3)
 
         await channel.send(message)
 
-    @staticmethod
-    async def thumbs_up(message: discord.Message) -> None:
+    async def thumbs_up(self, message: discord.Message) -> None:
         """
         Reacts to the given message with an ice-cold thumbs up.
         :param message:
         :return:
         """
-        await asyncio.sleep(random.randint(1, len(message.content) // 4) + random.random())
+        await self.pause(1, len(message.content) // 5)
         await message.add_reaction('👍')
 
     async def wait_loop(self, message: discord.Message) -> None:
         """
         The main event. Waiting loop, eventually speaks if/when it times out.
         :param message:
-        :type message:
         :return:
-        :rtype:
         """
         wait = random.randint(1, 4) if self.is_referenced(message) else None
 
-        def check(channel: discord.TextChannel, *args) -> bool:
+        def check(channel: discord.TextChannel, *_) -> bool:
             """ Simple check. Return `True` extends the wait. """
             return channel == message.channel
 
@@ -120,7 +125,7 @@ class LilHalJr(commands.Bot):
             await self.thumbs_up(message)
 
             self.quiet_channels.add(message.channel.id)
-            await asyncio.sleep(3600 + random.randint(-900, 900))
+            await self.pause(2700, 4500)
             self.quiet_channels.discard(message.channel.id)
 
         # If the message isn't interesting enough, he will say nothing.

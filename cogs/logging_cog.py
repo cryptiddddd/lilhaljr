@@ -55,9 +55,14 @@ class LogCog(commands.Cog, name="Logs"):
         logger.info(f"{self.bot.user.name} left `{guild.name}`.")
 
     @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        if message.author == self.bot.user:
+            logger.debug(f"Speaking in {message.guild}, {message.channel} ...")
+
+    @commands.Cog.listener()
     async def on_command(self, ctx: commands.Context):
         """ Reports command use. """
-        logger.info(f"{ctx.author} used {self.bot.command_prefix}{ctx.command.name} in {ctx.channel}.")
+        logger.info(f"[{ctx.channel}] {ctx.author} used {self.bot.command_prefix}{ctx.command.name}.")
 
     @commands.Cog.listener()
     async def on_error(self, event_method: str, *args, **kwargs):

@@ -1,6 +1,3 @@
-import asyncio
-import random
-
 import discord
 from discord.ext import commands
 
@@ -30,15 +27,16 @@ class DevCog(commands.Cog, name="Dev"):
     @commands.command(name="goodnight")
     async def command_good_night(self, ctx: commands.Context):
         """
-        Disconnects Lil Hal Jr safely.
+        Disconnects and closes Lil Hal Jr safely.
         :param ctx:
         """
         await self.bot.thumbs_up(ctx.message)
 
-        await asyncio.sleep(random.randint(1, 2) + random.random())
+        await self.bot.pause(1, 2)
         await self.bot.change_presence(status=discord.Status.offline)
 
         await self.bot.close()
+        quit(0)
 
     @commands.command(name="keyword")
     async def command_add_keyword(self, ctx: commands.Context, *, new_phrase: str):
