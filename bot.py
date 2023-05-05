@@ -16,7 +16,10 @@ class LilHalJr(commands.Bot):
         Initialize Lil Hal Jr. No command/prefix, all intents, case insensitive.
         """
         self.quiet_channels = set()
-        super().__init__(command_prefix="^", intents=discord.Intents.all(), case_insensitive=True)
+        super().__init__(command_prefix="^",
+                         intents=discord.Intents.all(),
+                         case_insensitive=True,
+                         help_command=None)
 
     @property
     def dialogue(self) -> str:
@@ -109,7 +112,7 @@ class LilHalJr(commands.Bot):
         """
         Once connected, Lil Hal Junior sets his status to "online".
         """
-        await self.change_presence(status=discord.Status.online)
+        await self.change_presence(status=discord.Status.dnd)
 
     async def on_message(self, message: discord.Message):
         """

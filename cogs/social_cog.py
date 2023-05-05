@@ -159,8 +159,8 @@ class SocialCog(commands.Cog, name="Social"):
     @tasks.loop(hours=2.5)
     async def cranebot_loop(self):
         """ Every now and again, Hal will try to interact with Cranebot. """
-        # Shake up the time between commands.
-        await self.bot.pause(1800, 3600)
+        if config.LOGGING:
+            logger.info("Running Cranebot interaction loop.")
 
         def check(c: discord.TextChannel) -> bool:
             """ Hal checks that Cranebot is here. """
@@ -180,6 +180,10 @@ class SocialCog(commands.Cog, name="Social"):
         for command in coms:
             await self.wait_until_quiet(channel)
             await self.bot.speak_in(channel, f"%{command}")
+
+        # Shake up the time between commands.
+        hours = round(random.randint(1, 3) + random.random(), 3)
+        self.cranebot_loop.change_interval(hours=hours)
 
     @cranebot_loop.before_loop
     async def before_cranebot_loop(self):
