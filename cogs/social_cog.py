@@ -108,7 +108,7 @@ class SocialCog(commands.Cog, name="Social"):
         # Loop until quiet.
         while True:
             try:
-                await self.wait_for('typing', check=check, timeout=random.randint(9, 25) + random.random())
+                await self.bot.wait_for('typing', check=check, timeout=random.randint(9, 25) + random.random())
 
             # Loop breaks, return.
             except asyncio.TimeoutError:
@@ -160,7 +160,6 @@ class SocialCog(commands.Cog, name="Social"):
     @tasks.loop(time=dt.time(7, 2, tzinfo=dt.timezone(dt.timedelta(hours=-8))))
     async def cranebot_loop(self):
         """ Every now and again, Hal will try to interact with Cranebot. """
-        # NOTE: TEMPORARILY TOASTY LOOP
         if config.LOGGING:
             logger.info("Running Cranebot interaction loop.")
 
@@ -175,7 +174,7 @@ class SocialCog(commands.Cog, name="Social"):
             return
 
         # Commands to choose between, all which should work.
-        coms = random.choices(["pokemon", "cat", "cow"],
+        coms = random.choices(["pokemon", "beast", "catch", "explode", "meme", "songrec", "highfive", "pa"],
                               k=random.randint(1, 3))
 
         # Use each, waiting in between.

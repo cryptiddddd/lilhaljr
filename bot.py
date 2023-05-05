@@ -37,11 +37,11 @@ class LilHalJr(commands.Bot):
         """
         return self.user.mentioned_in(message) or "hal" in message.content.lower().split()
 
-    async def be_quiet(self, message: discord.Message) -> bool:
+    async def be_quiet(self, message: discord.Message) -> int:
         """
         Reads a message and parses for a request to be quiet.
         :param message:
-        :return: True if Hal has been told to be quiet.
+        :return: A value > 0 if Hal has been told to be quiet. This value is the "rudeness level".
         """
         # Not talking to Hal.
         if not self.is_referenced(message):
@@ -50,14 +50,17 @@ class LilHalJr(commands.Bot):
         # Check for keywords.
         original = message.content.lower()
 
-        for query in config.quiet_phrases:
+        for idx, query in enumerate(config.quiet_phrases):
             if query in original:
-                return True
+                return idx + 1
 
-        return False
+        return 0
 
-    async def pause(self, low: int = 5, high: int = 20) -> None:
-        """ Pausing shortcut, using asyncio.sleep(). """
+    async def pause(self, low: int = 5, high: int = 20, multiplier: int = None) -> None:
+        """ Pausing shortcut, using asyncio.sleep(). Pauses within the given range. """
+        if multiplier is not None:
+            high += round(high * multiplier / 4)
+
         await asyncio.sleep(random.randint(low, high) + random.random())
 
     async def speak_in(self, channel: discord.TextChannel, statement: str = None) -> None:
@@ -68,7 +71,7 @@ class LilHalJr(commands.Bot):
         :return:
         """
         # Safety, possible double safety.
-        if channel.id in self.quiet_channels:
+        if channel.id in self.quiet_channels or not channel.can_send(discord.Message):
             return
 
         # Possible overwrite.
@@ -125,11 +128,11 @@ class LilHalJr(commands.Bot):
         if message.channel.id in self.quiet_channels or message.author == self.user:
             return
 
-        elif await self.be_quiet(message):
+        elif level := await self.be_quiet(message):
             await self.thumbs_up(message)
 
             self.quiet_channels.add(message.channel.id)
-            await self.pause(2700, 4500)
+            await self.pause(2700, 4500, level)
             self.quiet_channels.discard(message.channel.id)
 
         # If the message isn't interesting enough, he will say nothing.
