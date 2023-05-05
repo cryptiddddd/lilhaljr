@@ -1,4 +1,5 @@
 import asyncio
+import datetime as dt
 import random
 import typing
 
@@ -156,9 +157,10 @@ class SocialCog(commands.Cog, name="Social"):
         # Grab the registered channel.
         await self.say_hello(channel[0])
 
-    @tasks.loop(hours=2.5)
+    @tasks.loop(time=dt.time(7, 2, tzinfo=dt.timezone(dt.timedelta(hours=-8))))
     async def cranebot_loop(self):
         """ Every now and again, Hal will try to interact with Cranebot. """
+        # NOTE: TEMPORARILY TOASTY LOOP
         if config.LOGGING:
             logger.info("Running Cranebot interaction loop.")
 
@@ -173,13 +175,13 @@ class SocialCog(commands.Cog, name="Social"):
             return
 
         # Commands to choose between, all which should work.
-        coms = random.choices(["explode", "beast", "pokemon", "catch", "fish", "meme", "randomfact", "pat"],
+        coms = random.choices(["pokemon", "cat", "cow"],
                               k=random.randint(1, 3))
 
         # Use each, waiting in between.
         for command in coms:
             await self.wait_until_quiet(channel)
-            await self.bot.speak_in(channel, f"%{command}")
+            await self.bot.speak_in(channel, f";{command}")
 
         # Shake up the time between commands.
         hours = round(random.randint(1, 3) + random.random(), 3)
