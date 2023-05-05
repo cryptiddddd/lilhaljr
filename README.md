@@ -1,4 +1,5 @@
 # Lil Hal Jr.
+
 *It seems you have asked about DS's chat client auto-responder.*
 
 This bot is a recreation of Lil Hal Jr. from Homestuck. It has three thrilling features:
@@ -7,6 +8,15 @@ This bot is a recreation of Lil Hal Jr. from Homestuck. It has three thrilling f
 - Interacting with and pondering natural conversations, contributing an observation. "Interesting."
 
 He will also shut up for 15-75 minutes if told to.
+
+
+---
+### To run
+
+Create a file called `.env` with a variable `DISCORD_TOKEN`, and set the value to your Discord bot token. 
+
+Install packages specified in `requirements.txt` and run `lil_hal_jr.py`.
+
 
 ---
 ### Structure
@@ -19,8 +29,9 @@ He will also shut up for 15-75 minutes if told to.
   - `logging_cog.py`: Handles logging capabilities, toggleable from `config.py`.
   - `social_cog.py`: Hal Jr gets more socially adventurous.
 
+
 ---
-### Features
+### Feature Breakdown.
 
 In `bot.py`:
 - The basic, classic, "Hmm" "Yes" and "Interesting" responses.
@@ -43,7 +54,9 @@ In `social_cog.py`:
 - Greets new members to the server.
 - Attempts to engage with Cranebot's commands.
 
+
 ---
 ### Changelog
 
 - 05-04-2023: Added commands.
+- 05-05-2023: Added [to run](#to-run) guide section.
