@@ -157,7 +157,7 @@ class SocialCog(commands.Cog, name="Social"):
         # Grab the registered channel.
         await self.say_hello(channel[0])
 
-    @tasks.loop(time=dt.time(7, 2, tzinfo=dt.timezone(dt.timedelta(hours=-8))))
+    @tasks.loop(time=dt.time(9, 2, tzinfo=dt.timezone(dt.timedelta(hours=-8))))
     async def cranebot_loop(self):
         """ Every now and again, Hal will try to interact with Cranebot. """
         if config.LOGGING:
