@@ -1,4 +1,5 @@
 import asyncio
+import datetime as dt
 import random
 
 import discord
@@ -29,6 +30,19 @@ class LilHalJr(commands.Bot):
 
         return random.choice(["Hmm.", "Yes.", "Interesting."])
 
+    @staticmethod
+    def random_time(first: int, last: int) -> dt.time:
+        """
+        Creates a random time between the given hours.
+        :param first:
+        :param last:
+        :return:
+        """
+        return dt.time(random.randint(first, last - 1),
+                       random.randint(0, 60),
+                       random.randint(0, 60),
+                       tzinfo=dt.timezone(dt.timedelta(hours=-8)))
+
     def is_referenced(self, message: discord.Message) -> bool:
         """
         Checks if Hal is mentioned/referenced in the given message.
@@ -50,11 +64,12 @@ class LilHalJr(commands.Bot):
         # Check for keywords.
         original = message.content.lower()
 
-        for idx, query in enumerate(config.quiet_phrases):
+        # Get rudeness level.
+        for query, level in config.quiet_phrases.items():
             if query in original:
-                return idx + 1
-
-        return 0
+                return level
+        else:
+            return 0
 
     async def pause(self, low: int = 5, high: int = 20, multiplier: int = None) -> None:
         """ Pausing shortcut, using asyncio.sleep(). Pauses within the given range. """

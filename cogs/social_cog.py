@@ -1,5 +1,5 @@
 import asyncio
-import datetime as dt
+import logging
 import random
 import typing
 
@@ -10,9 +10,7 @@ import config
 from bot import LilHalJr
 
 
-if config.LOGGING:
-    import logging
-    logger = logging.getLogger("lilhaljr")
+logger = logging.getLogger("lilhaljr")
 
 
 class SocialCog(commands.Cog, name="Social"):
@@ -22,7 +20,7 @@ class SocialCog(commands.Cog, name="Social"):
     def __init__(self, bot: LilHalJr):
         self.bot = bot
 
-        self.cranebot_loop.start()
+        self.bot_interaction_loop.start()
 
     @staticmethod
     async def __find_channel_by_keyword(guild: discord.Guild, keyword: str) -> discord.TextChannel | None:
@@ -43,37 +41,42 @@ class SocialCog(commands.Cog, name="Social"):
         :param condition: A callable function that takes a text channel for input, and returns a bool
         :return: Suitable channel.
         """
-        async def test_for_quiet(ch: discord.TextChannel) -> bool:
-            """ Tests that the given channel is quiet. """
-            try:
-                # Wait for someone to type in the same channel
-                self.bot.wait_for("typing", check=lambda c: c == ch, timeout=30)
-
-            except asyncio.TimeoutError:
-                return False
-
-            else:
-                return True
-
-        async def tests(ch: discord.TextChannel) -> bool:
+        def validate(ch: discord.TextChannel) -> bool:
             """ Tests the given channel. """
-            return ch.can_send(discord.Message) and condition(ch) and await test_for_quiet(ch)
+            test = condition(ch) if condition else True  # Condition can be None, be wary.
+            return ch.can_send(discord.Message) and test
 
-        # Check bot arena first.
-        home_guild = self.bot.get_guild(config.HOME_GUILD)
-        for channel in home_guild.text_channels:
-            if await tests(channel):
-                return channel
+        # Get a list of candidate channels. Checks home guild first.
+        home_guild = self.bot.get_guild(config.SECRET_GUILD)
+        channels = list(filter(validate, home_guild.text_channels))
 
-        # Else, surf through all guilds.
-        for guild in self.bot.guilds:
-            if guild == home_guild:
-                continue
+        def channel_check(ch: discord.TextChannel, *_) -> bool:
+            """ Checks if the typing channel is in the list. """
+            result = ch in channels
 
-            # Test channels, return first match.
-            for channel in guild.text_channels:
-                if await tests(channel):
-                    return channel
+            if result:
+                channels.remove(ch)
+
+            return result
+
+        while len(channels) > 0:
+            try:
+                await self.bot.wait_for("typing", check=channel_check, timeout=10)
+            except asyncio.TimeoutError:
+                break
+
+        if len(channels) >= 1:
+            return channels[0]
+
+        # # Else, surf through all guilds.
+        # for guild in self.bot.guilds:
+        #     if guild == home_guild:
+        #         continue
+        #
+        #     # Test channels, return first match.
+        #     for channel in guild.text_channels:
+        #         if await validate(channel):
+        #             return channel
 
     async def introduce_to(self, channel: discord.TextChannel) -> None:
         """
@@ -92,7 +95,7 @@ class SocialCog(commands.Cog, name="Social"):
         :param channel: Channel in which to say hello.
         :return: No return value
         """
-        await self.bot.pause(5, 15)
+        await self.bot.pause(5, 10)
         await self.bot.speak_in(channel, "Hello.")
 
     async def wait_until_quiet(self, channel: discord.TextChannel) -> None:
@@ -101,14 +104,11 @@ class SocialCog(commands.Cog, name="Social"):
         :param channel: Channel to wait in.
         :return: No value. Just returns when ready.
         """
-        def check(ch: discord.TextChannel, *_) -> bool:
-            """ Simple check. Return `True` extends the wait. """
-            return ch == channel
-
         # Loop until quiet.
         while True:
             try:
-                await self.bot.wait_for('typing', check=check, timeout=random.randint(9, 25) + random.random())
+                wait = random.randint(9, 25) + random.random()
+                await self.bot.wait_for('typing', check=lambda c, u, w: c == channel, timeout=wait)
 
             # Loop breaks, return.
             except asyncio.TimeoutError:
@@ -155,44 +155,62 @@ class SocialCog(commands.Cog, name="Social"):
             return
 
         # Grab the registered channel.
-        await self.say_hello(channel[0])
+        channel = channel[0]
 
-    @tasks.loop(time=dt.time(9, 2, tzinfo=dt.timezone(dt.timedelta(hours=-8))))
-    async def cranebot_loop(self):
+        # Safeguard.
+        if "intro" not in channel.name.lower():
+            await self.say_hello(channel)
+
+    @tasks.loop(hours=5)
+    async def bot_interaction_loop(self):
         """ Every now and again, Hal will try to interact with Cranebot. """
-        if config.LOGGING:
-            logger.info("Running Cranebot interaction loop.")
+        logger.info("Running bot interaction loop.")
 
+        cranebot_commands = ["pokemon", "beast", "catch", "explode", "meme", "songrec", "highfive", "pat"]
+        cranebot_result = await self.bot_command_interaction(config.CRANEBOT_ID, '%', cranebot_commands)
+
+        # Backup plan:
+        if not cranebot_result and not random.randint(0, 99):
+            await self.bot_command_interaction(config.TOASTY_ID, ';', ["pokemon", "cat", "cow", "shrug", "lenny"])
+
+        # Shake up the time between commands.
+        next_time = self.bot.random_time(6, 21)
+        self.bot_interaction_loop.change_interval(time=next_time)
+        logger.info(f"Bot interaction loop will run again at {next_time}...")
+
+    @bot_interaction_loop.before_loop
+    async def before_bot_loop(self):
+        """ Simply waits until ready before doing anything. """
+        await self.bot.wait_until_ready()
+
+        logger.info("Starting bot interaction loop...")
+
+    async def bot_command_interaction(self, bot_id: int, command_prefix: str, command_list: list[str]) -> bool:
+        """
+        Attempts to interact with another bot through commands.
+        :param bot_id: Discord user ID of the bot.
+        :param command_prefix: The bot's prefix.
+        :param command_list: List of the given bot's commands to pick from.
+        :return: True if an interaction is attempted. False if not.
+        """
         def check(c: discord.TextChannel) -> bool:
-            """ Hal checks that Cranebot is here. """
-            cranebot = c.guild.get_member(config.CRANEBOT_ID)
-            return cranebot is not None and cranebot.status != discord.Status.offline
+            """ A check that the bot is in a channel and online. """
+            bot = c.guild.get_member(bot_id)
+            return bot is not None and bot.status != discord.Status.offline
 
         # Find a quiet channel.
         channel = await self.find_quiet_channel(check)
         if channel is None:
-            return
+            return False
 
-        # Commands to choose between, all which should work.
-        coms = random.choices(["pokemon", "beast", "catch", "explode", "meme", "songrec", "highfive", "pa"],
-                              k=random.randint(1, 3))
+        # Use a couple commands, waiting in between.
+        coms = random.choices(command_list, k=random.randint(1, 3))
 
-        # Use each, waiting in between.
         for command in coms:
             await self.wait_until_quiet(channel)
-            await self.bot.speak_in(channel, f";{command}")
+            await self.bot.speak_in(channel, f"{command_prefix}{command.capitalize()}")
 
-        # Shake up the time between commands.
-        hours = round(random.randint(1, 3) + random.random(), 3)
-        self.cranebot_loop.change_interval(hours=hours)
-
-    @cranebot_loop.before_loop
-    async def before_cranebot_loop(self):
-        """ Simply waits until ready before doing anything."""
-        await self.bot.wait_until_ready()
-
-        if config.LOGGING:
-            logger.info("Starting Cranebot interaction loop...")
+        return True
 
 
 def setup(bot: LilHalJr) -> None:

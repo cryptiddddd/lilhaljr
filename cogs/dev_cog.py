@@ -1,14 +1,13 @@
+import logging
+
 import discord
 from discord.ext import commands
 
 from bot import LilHalJr
 import config
 
-# Get logging stuff.
-if config.LOGGING:
-    import logging
 
-    logger = logging.getLogger("lilhaljr")
+logger = logging.getLogger("lilhaljr")
 
 
 class DevCog(commands.Cog, name="Dev"):
@@ -37,12 +36,10 @@ class DevCog(commands.Cog, name="Dev"):
         """
         await self.bot.thumbs_up(ctx.message)
 
-        # This comment is redundant without logging enabled.
-        if config.LOGGING:
-            channels = [self.bot.get_channel(i) for i in self.bot.quiet_channels]
-            message = "Quiet channels are: " + ", ".join([ch.name for ch in channels])
+        channels = [self.bot.get_channel(i) for i in self.bot.quiet_channels]
+        message = "Quiet channels are: " + ", ".join([ch.name for ch in channels])
 
-            logger.info(message)
+        logger.info(message)
 
     @commands.command(name="goodnight")
     async def command_good_night(self, ctx: commands.Context):
@@ -59,17 +56,17 @@ class DevCog(commands.Cog, name="Dev"):
         quit(0)
 
     @commands.command(name="keyword")
-    async def command_add_keyword(self, ctx: commands.Context, *, new_phrase: str):
+    async def command_add_keyword(self, ctx: commands.Context, rude_level: int, *, new_phrase: str):
         """
         Allows the developer to add a key phrase to tell Hal to be quiet.
         :param ctx:
+        :param rude_level: The level of rudeness of the phrase.
         :param new_phrase: A phrase to add to `quiet_keywords`.
         """
-        config.quiet_phrases.add(new_phrase.lower())
+        config.quiet_phrases[new_phrase.lower()] = rude_level
         await self.bot.thumbs_up(ctx.message)
 
-        if config.LOGGING:
-            logger.debug(f"Quiet key phrases: {config.quiet_phrases}")
+        logger.debug(f"Quiet key phrases: {config.quiet_phrases}")
 
     @commands.command(name="ping")
     async def command_ping(self, ctx: commands.Context):

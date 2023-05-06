@@ -48,11 +48,11 @@ class LogCog(commands.Cog, name="Logs"):
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
-        logger.info(f"{self.bot.user.name} joined `{guild.name}`.")
+        logger.info(f"{self.bot.user.name} joined {guild.name}.")
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild: discord.Guild):
-        logger.info(f"{self.bot.user.name} left `{guild.name}`.")
+        logger.info(f"{self.bot.user.name} left {guild.name}.")
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
