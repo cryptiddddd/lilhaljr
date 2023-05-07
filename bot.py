@@ -158,7 +158,6 @@ class LilHalJr(commands.Bot):
         else:
             await self.wait_loop(message)
 
-    @commands.Cog.listener()
     async def on_guild_remove(self, guild: discord.Guild):
         # Clear all silenced channels.
         for channel in guild.channels:
