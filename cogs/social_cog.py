@@ -168,7 +168,7 @@ class SocialCog(commands.Cog, name="Social"):
         cranebot_result = await self.bot_command_interaction(config.CRANEBOT_ID, '%', cranebot_commands)
 
         # Backup plan:
-        if not cranebot_result and not random.randint(0, 99):
+        if not cranebot_result:
             await self.bot_command_interaction(config.TOASTY_ID, ';', ["pokemon", "cat", "cow", "shrug", "lenny"])
 
         # Shake up the time between commands.
