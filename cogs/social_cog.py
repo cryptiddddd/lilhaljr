@@ -23,7 +23,7 @@ class SocialCog(commands.Cog, name="Social"):
         self.bot_interaction_loop.start()
 
     @staticmethod
-    async def __find_channel_by_keyword(guild: discord.Guild, keyword: str) -> discord.TextChannel | None:
+    def __find_channel_by_keyword(guild: discord.Guild, keyword: str) -> discord.TextChannel | None:
         """
         Finds a channel in a given guild with a very simple keyword search.
         :param guild: Guild to search.
@@ -52,16 +52,14 @@ class SocialCog(commands.Cog, name="Social"):
 
         def channel_check(ch: discord.TextChannel, *_) -> bool:
             """ Checks if the typing channel is in the list. """
-            result = ch in channels
-
-            if result:
-                channels.remove(ch)
-
-            return result
+            return ch in channels
 
         while len(channels) > 0:
             try:
-                await self.bot.wait_for("typing", check=channel_check, timeout=10)
+                typing_result = await self.bot.wait_for("typing", check=channel_check, timeout=10)
+                print(typing_result)
+                channels.remove(typing_result[0])
+
             except asyncio.TimeoutError:
                 break
 
@@ -121,12 +119,12 @@ class SocialCog(commands.Cog, name="Social"):
         :param guild:
         """
         # Say hello
-        channel = await self.__find_channel_by_keyword(guild, "general")
+        channel = self.__find_channel_by_keyword(guild, "general")
         if channel is not None:
             await self.say_hello(channel)
 
         # Introduce self.
-        channel = await self.__find_channel_by_keyword(guild, "intro")
+        channel = self.__find_channel_by_keyword(guild, "intro")
         if channel is not None:
             await self.introduce_to(channel)
 
