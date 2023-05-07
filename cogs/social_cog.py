@@ -41,10 +41,14 @@ class SocialCog(commands.Cog, name="Social"):
         :param condition: A callable function that takes a text channel for input, and returns a bool
         :return: Suitable channel.
         """
+        def name_check(ch: discord.TextChannel) -> bool:
+            """ This ensures the given channel is appropriate to chat in. """
+            return "intro" not in ch.name.lower() and "vent" not in ch.name.lower()
+
         def validate(ch: discord.TextChannel) -> bool:
             """ Tests the given channel. """
             test = condition(ch) if condition else True  # Condition can be None, be wary.
-            return ch.can_send(discord.Message) and test
+            return ch.can_send(discord.Message) and test and name_check(ch)
 
         # Get a list of candidate channels. Checks home guild first.
         home_guild = self.bot.get_guild(config.HOME_GUILD)
