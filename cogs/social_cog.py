@@ -47,7 +47,7 @@ class SocialCog(commands.Cog, name="Social"):
             return ch.can_send(discord.Message) and test
 
         # Get a list of candidate channels. Checks home guild first.
-        home_guild = self.bot.get_guild(config.SECRET_GUILD)
+        home_guild = self.bot.get_guild(config.HOME_GUILD)
         channels = list(filter(validate, home_guild.text_channels))
 
         def channel_check(ch: discord.TextChannel, *_) -> bool:
@@ -168,7 +168,7 @@ class SocialCog(commands.Cog, name="Social"):
         cranebot_result = await self.bot_command_interaction(config.CRANEBOT_ID, '%', cranebot_commands)
 
         # Backup plan:
-        if not cranebot_result:
+        if not cranebot_result and not random.randint(0, 99):
             await self.bot_command_interaction(config.TOASTY_ID, ';', ["pokemon", "cat", "cow", "shrug", "lenny"])
 
         # Shake up the time between commands.
