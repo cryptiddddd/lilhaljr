@@ -22,6 +22,7 @@ class LilHalJr(commands.Bot):
                          case_insensitive=True,
                          help_command=None)
 
+    # ==================================== HELPER OPERATIONS ====================================
     @property
     def dialogue(self) -> str:
         """ Returns Lil Hal Junior's famous catchphrase. """
@@ -39,18 +40,11 @@ class LilHalJr(commands.Bot):
         :return:
         """
         return dt.time(random.randint(first, last - 1),
-                       random.randint(0, 60),
-                       random.randint(0, 60),
+                       random.randint(0, 59),
+                       random.randint(0, 59),
                        tzinfo=dt.timezone(dt.timedelta(hours=-8)))
 
-    def is_referenced(self, message: discord.Message) -> bool:
-        """
-        Checks if Hal is mentioned/referenced in the given message.
-        :param message:
-        :return: True if Hal is pinged, or mentioned by name.
-        """
-        return self.user.mentioned_in(message) or "hal" in message.content.lower().split()
-
+    # ==================================== HELPER OPERATIONS ====================================
     async def be_quiet(self, message: discord.Message) -> int:
         """
         Reads a message and parses for a request to be quiet.
@@ -58,7 +52,7 @@ class LilHalJr(commands.Bot):
         :return: A value > 0 if Hal has been told to be quiet. This value is the "rudeness level".
         """
         # Not talking to Hal.
-        if not self.is_referenced(message):
+        if not await self.is_referenced(message):
             return False
 
         # Check for keywords.
@@ -71,12 +65,41 @@ class LilHalJr(commands.Bot):
         else:
             return 0
 
+    @staticmethod
+    def clean_string(text: str) -> str:
+        """
+        Cleans a string of all punctuation, returns it lowercase.
+        :param text: Input text.
+        :return: Output text.
+        """
+        new_text = ""
+        for i in text.lower():
+            # Save letters, numbers, and spaces.
+            if i.isalnum() or i.isspace():
+                new_text += i
+
+        return new_text
+
+    async def is_referenced(self, message: discord.Message) -> bool:
+        """
+        Checks if Hal is mentioned/referenced in the given message.
+        :param message:
+        :return: True if Hal is pinged, or mentioned by name.
+        """
+        return self.user.mentioned_in(message) or "hal" in message.content.split() \
+            or self.user in [m.author async for m in message.channel.history(limit=2)]
+
     async def pause(self, low: int = 5, high: int = 20, multiplier: int = None) -> None:
         """ Pausing shortcut, using asyncio.sleep(). Pauses within the given range. """
         if multiplier is not None:
             high += round(high * multiplier / 4)
 
-        await asyncio.sleep(random.randint(low, high) + random.random())
+        if low >= high:
+            base_time = low
+        else:
+            base_time = random.randint(low, high)
+
+        await asyncio.sleep(base_time + random.random())
 
     async def speak_in(self, channel: discord.TextChannel, statement: str = None) -> None:
         """
@@ -94,19 +117,22 @@ class LilHalJr(commands.Bot):
 
         # Send.
         await channel.trigger_typing()
-        await self.pause(1, len(message) // 3)
+        await self.pause(1, len(message) // 4)
 
         await channel.send(message)
 
-    async def thumbs_up(self, message: discord.Message) -> None:
+    async def thumbs_up(self, message: discord.Message, up: bool = True) -> None:
         """
         Reacts to the given message with an ice-cold thumbs up.
         :param message:
+        :param up: True for thumbs up, false for thumbs down.
         :return:
         """
+        reaction = '👍' if up else '👎'
+
         high = max(2, len(message.content) // 6)
         await self.pause(1, high)
-        await message.add_reaction('👍')
+        await message.add_reaction(reaction)
 
     async def wait_loop(self, message: discord.Message) -> None:
         """
@@ -114,7 +140,7 @@ class LilHalJr(commands.Bot):
         :param message:
         :return:
         """
-        wait = random.randint(1, 4) if self.is_referenced(message) else None
+        wait = random.randint(1, 4) if await self.is_referenced(message) else None
 
         def check(channel: discord.TextChannel, *_) -> bool:
             """ Simple check. Return `True` extends the wait. """
@@ -126,6 +152,7 @@ class LilHalJr(commands.Bot):
         except asyncio.TimeoutError:
             await self.speak_in(message.channel)
 
+    # ==================================== EVENTS ====================================
     async def on_ready(self):
         """
         Once connected, Lil Hal Junior sets his status to "online".
@@ -137,7 +164,13 @@ class LilHalJr(commands.Bot):
         Lil Hal Junior waits for a gap in conversation to say something
         :param message:
         """
+        # Process commands. No response if a command was processed.
         await self.process_commands(message)
+        if message.channel.last_message.author == self.user:
+            return
+
+        # Clean up content, altering the message object. Questionable!
+        message.content = self.clean_string(message.content)
 
         # If Hal has been muted in the channel, he will not say anything, nothing will happen.
         if message.channel.id in self.quiet_channels or message.author == self.user:
