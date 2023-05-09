@@ -22,6 +22,7 @@ class SocialCog(commands.Cog, name="Social"):
 
         self.bot_interaction_loop.start()
 
+    # ==================================== HELPER OPERATIONS ====================================
     @staticmethod
     def __find_channel_by_keyword(guild: discord.Guild, keyword: str) -> discord.TextChannel | None:
         """
@@ -33,6 +34,63 @@ class SocialCog(commands.Cog, name="Social"):
         for channel in guild.text_channels:
             if channel.can_send(discord.Message) and keyword.lower() in channel.name.lower():
                 return channel
+
+    @staticmethod
+    def __random_number(percentage: bool = False) -> str:
+        """
+        Creates a random number for Hal to spit out. Returns it as a string.
+        :param percentage: If the number should be a [real] percentage, or not.
+        :return: Written string of a number or percentage.
+        """
+        def flat_numbers(number: str) -> int:
+            """ Converts a string into an int, regardless of decimal presence. """
+            return round(float(number)) if "." in number else int(number)
+
+        def add_decimal(number: str, position: int = None) -> str:
+            """ Adds a decimal at the given position. """
+            # No space for a decimal
+            if len(number) == 1:
+                return number
+
+            elif position is None:
+                position = random.randint(0, len(number))
+
+            return number[:position] + "." + number[position:]
+
+        # Decide length.
+        length = random.sample([0, 1, 2, 3, 4, 5], k=1, counts=[1, 10, 22, 15, 5, 2])[0]
+
+        # Get digits.
+        if length == 0:
+            digits = "0"
+        else:
+            digits = "".join([str(random.randint(0, 9)) for _ in range(length)])
+
+        # Add decimal.
+        if percentage:
+            digits = add_decimal(digits, 2)
+
+        elif not random.randint(0, 3):
+            digits = add_decimal(digits)
+
+        # Final checks
+        while not digits == "0" and digits.startswith("0") and not digits.startswith("0."):
+            digits = digits[1:]
+
+        if digits.startswith("."):
+            digits = f"0{digits}"
+        elif digits.endswith("."):
+            digits = digits[:-1]
+
+        if percentage:
+            digits += "%"
+
+        # If not percentage, possibly turn to hex or binary.
+        elif not random.randint(0, 3):
+            modify = random.sample([hex, bin, oct], k=1, counts=[5, 5, 1])[0]
+            digits = modify(flat_numbers(digits))
+
+        return digits
 
     async def find_quiet_channel(self, condition: typing.Callable[[discord.TextChannel], bool] = None) \
             -> discord.TextChannel:
@@ -61,7 +119,6 @@ class SocialCog(commands.Cog, name="Social"):
         while len(channels) > 0:
             try:
                 typing_result = await self.bot.wait_for("typing", check=channel_check, timeout=10)
-                print(typing_result)
                 channels.remove(typing_result[0])
 
             except asyncio.TimeoutError:
@@ -116,6 +173,7 @@ class SocialCog(commands.Cog, name="Social"):
             except asyncio.TimeoutError:
                 break
 
+    # ==================================== EVENTS ====================================
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
         """
@@ -163,12 +221,14 @@ class SocialCog(commands.Cog, name="Social"):
         if "intro" not in channel.name.lower():
             await self.say_hello(channel)
 
+    # ==================================== LOOPS ====================================
     @tasks.loop(hours=5)
     async def bot_interaction_loop(self):
         """ Every now and again, Hal will try to interact with Cranebot. """
         logger.info("Running bot interaction loop.")
 
-        cranebot_commands = ["pokemon", "beast", "catch", "explode", "meme", "songrec", "highfive", "pat"]
+        cranebot_commands = ["pokemon", "beast", "catch", "explode", "meme", "songrec", "highfive", "pat",
+                             "team", "dex", "bestiary", "randomfact", "randomfact", "randomfact"]
         cranebot_result = await self.bot_command_interaction(config.CRANEBOT_ID, '%', cranebot_commands)
 
         # Backup plan:
@@ -209,10 +269,54 @@ class SocialCog(commands.Cog, name="Social"):
         coms = random.choices(command_list, k=random.randint(1, 3))
 
         for command in coms:
+            command_usage = f"{command_prefix}{command.capitalize()}"
+
+            # Special command cases.
+            if command == "explode":
+                # Possible targets, anyone but self and Cranebot.
+                targets = [m.author.menion async for m in channel.history(limit=3) if m.author.id not in
+                           [config.CRANEBOT_ID, self.bot.user.id]]
+                if len(targets) > 0:
+                    mention = random.choice(targets)
+                    command_usage += f" {mention}"
+
             await self.wait_until_quiet(channel)
-            await self.bot.speak_in(channel, f"{command_prefix}{command.capitalize()}")
+            await self.bot.speak_in(channel, command_usage)
 
         return True
+
+    # ==================================== COMMANDS ====================================
+    @commands.command(name="inquire", help="Ask Lil Hal Junior a question.", aliases=["Inquiry", "Ask"])
+    async def command_inquire(self, ctx: commands.Context, *, query: str):
+        """
+        Ask Lil Hal Junior a question, and Lil Hal Junior will respond in the most asinine way.
+        :param ctx: Context.
+        :param query: The user's question.
+        """
+        query = self.bot.clean_string(query).split()[0]  # The first word is the question word.
+
+        # Yes/no question.
+        if query in {"am", "are", "can", "could", "did", "do", "does", "has", "have", "is", "may", "should", "was",
+                     "were", "will", "would"}:
+            answer = self.__random_number(percentage=True)
+            answer = f"There is a {answer} chance so."
+
+        # Anything else.
+        else:
+            answer = self.__random_number()
+
+        await self.bot.speak_in(ctx.channel, answer)
+
+    @command_inquire.error
+    async def command_inquire_error(self, ctx: commands.Context, error: commands.CommandInvokeError):
+        """
+        Handles errors for ^Inquire.
+        :param ctx: Context of command's invoke.
+        :param error: The error on invoking ^Inquire
+        """
+        # If there was no question, Hal gives a thumbs down.
+        if isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.BadArgument):
+            await self.bot.thumbs_up(ctx.message, False)
 
 
 def setup(bot: LilHalJr) -> None:

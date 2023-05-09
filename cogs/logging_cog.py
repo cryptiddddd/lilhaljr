@@ -65,6 +65,11 @@ class LogCog(commands.Cog, name="Logs"):
         logger.info(f"[{ctx.channel}] {ctx.author} used {self.bot.command_prefix}{ctx.command.name}.")
 
     @commands.Cog.listener()
+    async def on_command_error(self, ctx: commands.Context, error: commands.CommandInvokeError):
+        """ Reports unhandled command error. """
+        logger.error(f"on {ctx.bot.command_prefix}{ctx.command.name}: {error}")
+
+    @commands.Cog.listener()
     async def on_error(self, event_method: str, *args, **kwargs):
         """ Attempts to log an error. """
         logger.error(f"on `{event_method}`: `{args}` and `{kwargs}`")
