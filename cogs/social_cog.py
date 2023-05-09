@@ -20,7 +20,7 @@ class SocialCog(commands.Cog, name="Social"):
     def __init__(self, bot: LilHalJr):
         self.bot = bot
 
-        self.bot_interaction_loop.start()
+        # self.bot_interaction_loop.start()
 
     # ==================================== HELPER OPERATIONS ====================================
     @staticmethod
