@@ -31,7 +31,7 @@ Install packages specified in `requirements.txt` and run `lil_hal_jr.py`.
 
 
 ---
-### Feature Breakdown.
+### Feature Breakdown
 
 In `bot.py`:
 - The basic, classic, "Hmm" "Yes" and "Interesting" responses.

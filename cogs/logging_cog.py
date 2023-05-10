@@ -67,6 +67,10 @@ class LogCog(commands.Cog, name="Logs"):
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandInvokeError):
         """ Reports unhandled command error. """
+        # If the command doesn't exist, don't worry about it.
+        if isinstance(error, commands.CommandNotFound):
+            return
+
         logger.error(f"on {ctx.bot.command_prefix}{ctx.command.name}: {error}")
 
     @commands.Cog.listener()
