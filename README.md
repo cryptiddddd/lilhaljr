@@ -4,7 +4,6 @@
 
 ![python badge](https://img.shields.io/badge/python-3.11-fed142?logo=python&style=for-the-badge&labelColor=3776AB&logoColor=fff)
 ![pycord badge](https://img.shields.io/badge/pycord-2.4.1-d6d6d6?logo=discord&style=for-the-badge&labelColor=6c76e6&logoColor=d6d6d6)
-
 [![signature](https://img.shields.io/badge/crane%20did%20this-support%20hal-ccc?style=for-the-badge&logo=ko-fi)](https://ko-fi.com/wormboy3)
 
 
