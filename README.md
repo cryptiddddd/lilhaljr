@@ -2,20 +2,35 @@
 
 *It seems you have asked about DS's chat client auto-responder.*
 
-This bot is a recreation of Lil Hal Jr. from Homestuck. It has three thrilling features:
+![python badge](https://img.shields.io/badge/python-3.11-fed142?logo=python&style=for-the-badge&labelColor=3776AB&logoColor=fff)
+![pycord badge](https://img.shields.io/badge/pycord-2.4.1-d6d6d6?logo=discord&style=for-the-badge&labelColor=6c76e6&logoColor=d6d6d6)
+
+[![signature](https://img.shields.io/badge/crane%20did%20this-support%20hal-ccc?style=for-the-badge&logo=ko-fi)](https://ko-fi.com/wormboy3)
+
+
+This is a recreation of Lil Hal Jr. from Homestuck as a Discord bot. It has three thrilling features:
 - Responding to chat activity with a "Hmm."
-- Engaging socially by answering "Yes."
+- Socially engaging with answers like "Yes."
 - Interacting with and pondering natural conversations, contributing an observation. "Interesting."
 
 He will also shut up for 15-75 minutes if told to.
 
 
 ---
-### To run
+## To run
 
-Create a file called `.env` with a variable `DISCORD_TOKEN`, and set the value to your Discord bot token. 
+Create a `.env` file in the root folder and insert Discord bot token like so:
 
-Install packages specified in `requirements.txt` and run `lil_hal_jr.py`.
+```
+DISCORD_TOKEN=token-goes-here
+```
+
+Install packages specified in `requirements.txt`.
+
+```commandline
+# Windows commandline
+pip install -r requirements.txt
+```
 
 
 ---
@@ -26,8 +41,8 @@ Install packages specified in `requirements.txt` and run `lil_hal_jr.py`.
 - `config.py`: Configuration options.
 - `cogs`: Extensions.
   - `dev_cog.py`: Adds owner-only commands.
-  - `logging_cog.py`: Handles logging capabilities, toggleable from `config.py`.
-  - `social_cog.py`: Hal Jr gets more socially adventurous.
+  - `logging_cog.py`: Handles logging capabilities. Note: also initializes the logger from Python builtin `logging`.
+  - `social_cog.py`: Events and reactions that adventure beyong "Hmm", "Yes", and "Interesting".
 
 
 ---
@@ -40,7 +55,7 @@ In `bot.py`:
 
 In `dev_cog.py`:
 - Ping command.
-- View mute channel command [via logger].
+- View mute channel command (prints only to logger).
 - Add a key phrase for muting.
 - Shutdown command.
 
@@ -53,6 +68,7 @@ In `social_cog.py`:
   - If there is an obvious general channel, it sends a hello.
 - Greets new members to the server.
 - Attempts to engage with Cranebot's commands.
+- `^inquire` command, allowing users to ask questions with vague and asinine responses.
 
 
 ---
@@ -60,3 +76,4 @@ In `social_cog.py`:
 
 - 05-04-2023: Added commands.
 - 05-05-2023: Added [to run](#to-run) guide section.
+- 05-10-2023: Added fun badges and refined introduction and "to run" section. Project made public.
