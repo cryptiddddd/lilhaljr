@@ -14,7 +14,7 @@ class LilHalJr(commands.Bot):
     """
     def __init__(self):
         """
-        Initialize Lil Hal Jr. No command/prefix, all intents, case insensitive.
+        Initialize Lil Hal Jr. All intents, case insensitive.
         """
         self.quiet_channels = set()
         super().__init__(command_prefix="^",
@@ -35,9 +35,9 @@ class LilHalJr(commands.Bot):
     def random_time(first: int, last: int) -> dt.time:
         """
         Creates a random time between the given hours.
-        :param first:
-        :param last:
-        :return:
+        :param first: The earliest hour.
+        :param last: The latest hour.
+        :return: A randomized datetime.time object.
         """
         return dt.time(random.randint(first, last - 1),
                        random.randint(0, 59),
@@ -48,7 +48,7 @@ class LilHalJr(commands.Bot):
     async def be_quiet(self, message: discord.Message) -> int:
         """
         Reads a message and parses for a request to be quiet.
-        :param message:
+        :param message: The message to review.
         :return: A value > 0 if Hal has been told to be quiet. This value is the "rudeness level".
         """
         # Not talking to Hal.
@@ -172,18 +172,19 @@ class LilHalJr(commands.Bot):
         # Clean up content, altering the message object. Questionable!
         message.content = self.clean_string(message.content)
 
-        # If Hal has been muted in the channel, he will not say anything, nothing will happen.
+        # Check if he has been muted.
         if message.channel.id in self.quiet_channels or message.author == self.user:
             return
 
         elif level := await self.be_quiet(message):
             await self.thumbs_up(message)
 
+            # Be quiet, but only for so long. 
             self.quiet_channels.add(message.channel.id)
             await self.pause(2700, 4500, level)
             self.quiet_channels.discard(message.channel.id)
 
-        # If the message isn't interesting enough, he will say nothing.
+        # If the message isn't interesting enough, say nothing.
         elif len(message.content) < 10:
             return
 
