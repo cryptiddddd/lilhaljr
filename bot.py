@@ -1,11 +1,15 @@
 import asyncio
 import datetime as dt
+import logging
 import random
 
 import discord
 from discord.ext import commands
 
 import config
+
+
+logger = logging.getLogger("lilhaljr")
 
 
 class LilHalJr(commands.Bot):
@@ -45,7 +49,7 @@ class LilHalJr(commands.Bot):
                        tzinfo=dt.timezone(dt.timedelta(hours=-8)))
 
     # ==================================== HELPER OPERATIONS ====================================
-    async def be_quiet(self, message: discord.Message) -> int:
+    async def be_quiet_request(self, message: discord.Message) -> int:
         """
         Reads a message and parses for a request to be quiet.
         :param message:
@@ -89,15 +93,31 @@ class LilHalJr(commands.Bot):
         return self.user.mentioned_in(message) or "hal" in message.content.split() \
             or self.user in [m.author async for m in message.channel.history(limit=2)]
 
-    async def pause(self, low: int = 5, high: int = 20, multiplier: int = None) -> None:
-        """ Pausing shortcut, using asyncio.sleep(). Pauses within the given range. """
-        if multiplier is not None:
-            high += round(high * multiplier / 4)
+    def mute_in(self, channel: discord.TextChannel, level: int = 2) -> None:
+        """
+        Creates an asyncio task to mute the given channel for a variable amount of time.
+        :param channel: The channel to mute.
+        :param level: The rudeness level.
+        """
+        async def mute_and_wait() -> None:
+            """ Coroutine. Mutes for a variable amount of time."""
+            self.quiet_channels.add(channel.id)
+            await self.pause(2700, 4500, level)
+            self.quiet_channels.discard(channel.id)
 
-        if low >= high:
-            base_time = low
-        else:
-            base_time = random.randint(low, high)
+        asyncio.create_task(mute_and_wait())
+
+    async def pause(self, low: int = 5, high: int = 20, multiplier: int = None, base_time: int = None) -> None:
+        """ Pausing shortcut, using asyncio.sleep(). Pauses within the given range. """
+        # TODO: Redesign, and documentation
+        if base_time is None:
+            if multiplier is not None:
+                high += round(high * multiplier / 4)
+
+            if low >= high:
+                base_time = low
+            else:
+                base_time = random.randint(low, high)
 
         await asyncio.sleep(base_time + random.random())
 
@@ -121,18 +141,22 @@ class LilHalJr(commands.Bot):
 
         await channel.send(message)
 
-    async def thumbs_up(self, message: discord.Message, up: bool = True) -> None:
+    def thumbs_up(self, message: discord.Message, up: bool = True) -> None:
         """
-        Reacts to the given message with an ice-cold thumbs up.
+        Reacts to the given message with an ice-cold thumbs up. Or thumbs down.
+        NOTE: Non-asynchronous. This creates an asyncio task, which will execute in parallel.
         :param message:
         :param up: True for thumbs up, false for thumbs down.
         :return:
         """
-        reaction = '👍' if up else '👎'
+        async def response():
+            """ Pauses, responds to the message. """
+            reaction = '👍' if up else '👎'
 
-        high = max(2, len(message.content) // 6)
-        await self.pause(1, high)
-        await message.add_reaction(reaction)
+            await self.pause(base_time=0)  # Tiny pause.
+            await message.add_reaction(reaction)
+
+        asyncio.create_task(response())
 
     async def wait_loop(self, message: discord.Message) -> None:
         """
@@ -176,12 +200,10 @@ class LilHalJr(commands.Bot):
         if message.channel.id in self.quiet_channels or message.author == self.user:
             return
 
-        elif level := await self.be_quiet(message):
-            await self.thumbs_up(message)
-
-            self.quiet_channels.add(message.channel.id)
-            await self.pause(2700, 4500, level)
-            self.quiet_channels.discard(message.channel.id)
+        elif level := await self.be_quiet_request(message):
+            # Confirm request, dispatch mute duration.
+            self.thumbs_up(message)
+            self.mute_in(message.channel, level)
 
         # If the message isn't interesting enough, he will say nothing.
         elif len(message.content) < 10:
@@ -190,6 +212,21 @@ class LilHalJr(commands.Bot):
         # The main event.
         else:
             await self.wait_loop(message)
+
+    async def on_reaction_add(self, reaction: discord.Reaction, user: discord.Member | discord.User):
+        """
+        Alternative method to mute Hal in a server: reaction with the shushing emoji.
+        :param reaction: The Discord reaction.
+        :param user: The user reacting.
+        """
+        # Ignore if the reaction isn't on Hal's message.
+        if reaction.message.author != self.user:
+            return
+
+        # Shushing reaction.
+        if reaction.emoji == config.QUIET_EMOJI:
+            self.mute_in(reaction.message.channel)
+            logger.info(f"[{reaction.message.channel}] {user} muted Hal.")
 
     async def on_guild_remove(self, guild: discord.Guild):
         # Clear all silenced channels.

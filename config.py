@@ -16,3 +16,5 @@ quiet_phrases = {
     "go away": 4,
     "shut up": 5
 }
+
+QUIET_EMOJI = "🤫"

@@ -316,7 +316,7 @@ class SocialCog(commands.Cog, name="Social"):
         """
         # If there was no question, Hal gives a thumbs down.
         if isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.BadArgument):
-            await self.bot.thumbs_up(ctx.message, False)
+            self.bot.thumbs_up(ctx.message, False)
 
 
 def setup(bot: LilHalJr) -> None:

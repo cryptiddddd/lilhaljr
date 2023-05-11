@@ -51,7 +51,7 @@ pip install -r requirements.txt
 In `bot.py`:
 - The basic, classic, "Hmm" "Yes" and "Interesting" responses.
 - A secret surprise response.
-- Temporary mute ability, responding to key phrases set in `config.py`.
+- Temporary mute ability, responding to key phrases set in `config.py`, or an emoji, also configurable in `config.py` (in-progress, stable for default emojis).
 
 In `dev_cog.py`:
 - Ping command.
@@ -77,3 +77,4 @@ In `social_cog.py`:
 - 05-04-2023: Added commands.
 - 05-05-2023: Added [to run](#to-run) guide section.
 - 05-10-2023: Added fun badges and refined introduction and "to run" section. Project made public.
+- 05-11-2023: Added note for shushing emoji.

@@ -34,10 +34,14 @@ class DevCog(commands.Cog, name="Dev"):
         """
         Hal logs quiet channels, reacts with a thumbs up.
         """
-        await self.bot.thumbs_up(ctx.message)
+        self.bot.thumbs_up(ctx.message)
 
         channels = [self.bot.get_channel(i) for i in self.bot.quiet_channels]
-        message = "Quiet channels are: " + ", ".join([ch.name for ch in channels])
+
+        if len(channels) > 0:
+            message = "Quiet channels are: " + ", ".join([ch.name for ch in channels])
+        else:
+            message = "No quiet channels."
 
         logger.info(message)
 
@@ -47,7 +51,7 @@ class DevCog(commands.Cog, name="Dev"):
         Disconnects and closes Lil Hal Jr safely.
         :param ctx:
         """
-        await self.bot.thumbs_up(ctx.message)
+        self.bot.thumbs_up(ctx.message)
 
         await self.bot.pause(1, 2)
         await self.bot.change_presence(status=discord.Status.offline)
@@ -64,7 +68,7 @@ class DevCog(commands.Cog, name="Dev"):
         :param new_phrase: A phrase to add to `quiet_keywords`.
         """
         config.quiet_phrases[new_phrase.lower()] = rude_level
-        await self.bot.thumbs_up(ctx.message)
+        self.bot.thumbs_up(ctx.message)
 
         logger.debug(f"Quiet key phrases: {config.quiet_phrases}")
 
@@ -74,7 +78,7 @@ class DevCog(commands.Cog, name="Dev"):
         Pings to test Hal's response.
         :param ctx:
         """
-        await self.bot.thumbs_up(ctx.message)
+        self.bot.thumbs_up(ctx.message)
 
 
 def setup(bot: LilHalJr) -> None:
