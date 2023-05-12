@@ -4,7 +4,8 @@
 
 ![python badge](https://img.shields.io/badge/python-3.11-fed142?logo=python&style=for-the-badge&labelColor=3776AB&logoColor=fff)
 ![pycord badge](https://img.shields.io/badge/pycord-2.4.1-d6d6d6?logo=discord&style=for-the-badge&labelColor=6c76e6&logoColor=d6d6d6)
-[![signature](https://img.shields.io/badge/crane%20did%20this-support%20hal-ccc?style=for-the-badge&logo=ko-fi)](https://ko-fi.com/wormboy3)
+[![ko-fi badge](https://img.shields.io/badge/support%20hal-FF5E5B?style=for-the-badge&logo=ko-fi&logoColor=fff)](https://ko-fi.com/wormboy3)
+![signature](https://img.shields.io/badge/crane%20did%20this-926cd4?style=for-the-badge)
 
 
 This is a recreation of Lil Hal Jr. from Homestuck as a Discord bot. It has three thrilling features:
@@ -12,7 +13,7 @@ This is a recreation of Lil Hal Jr. from Homestuck as a Discord bot. It has thre
 - Socially engaging with answers like "Yes."
 - Interacting with and pondering natural conversations, contributing an observation. "Interesting."
 
-He will also shut up for 15-75 minutes if told to.
+He will also shut up for 45-75 minutes if told to.
 
 
 ---
