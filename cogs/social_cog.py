@@ -274,7 +274,7 @@ class SocialCog(commands.Cog, name="Social"):
             # Special command cases.
             if command == "explode":
                 # Possible targets, anyone but self and Cranebot.
-                targets = [m.author.menion async for m in channel.history(limit=3) if m.author.id not in
+                targets = [m.author.mention async for m in channel.history(limit=3) if m.author.id not in
                            [config.CRANEBOT_ID, self.bot.user.id]]
                 if len(targets) > 0:
                     mention = random.choice(targets)
