@@ -1,5 +1,4 @@
 import asyncio
-import datetime as dt
 import logging
 import random
 
@@ -7,7 +6,7 @@ import discord
 from discord.ext import commands
 
 import config
-
+import helpers
 
 logger = logging.getLogger("lilhaljr")
 
@@ -35,19 +34,6 @@ class LilHalJr(commands.Bot):
 
         return random.choice(["Hmm.", "Yes.", "Interesting."])
 
-    @staticmethod
-    def random_time(first: int, last: int) -> dt.time:
-        """
-        Creates a random time between the given hours.
-        :param first: The earliest hour.
-        :param last: The latest hour.
-        :return: A randomized datetime.time object.
-        """
-        return dt.time(random.randint(first, last - 1),
-                       random.randint(0, 59),
-                       random.randint(0, 59),
-                       tzinfo=dt.timezone(dt.timedelta(hours=-8)))
-
     # ==================================== HELPER OPERATIONS ====================================
     async def be_quiet_request(self, message: discord.Message) -> int:
         """
@@ -68,21 +54,6 @@ class LilHalJr(commands.Bot):
                 return level
         else:
             return 0
-
-    @staticmethod
-    def clean_string(text: str) -> str:
-        """
-        Cleans a string of all punctuation, returns it lowercase.
-        :param text: Input text.
-        :return: Output text.
-        """
-        new_text = ""
-        for i in text.lower():
-            # Save letters, numbers, and spaces.
-            if i.isalnum() or i.isspace():
-                new_text += i
-
-        return new_text
 
     async def is_referenced(self, message: discord.Message) -> bool:
         """
@@ -121,11 +92,12 @@ class LilHalJr(commands.Bot):
 
         await asyncio.sleep(base_time + random.random())
 
-    async def speak_in(self, channel: discord.TextChannel, statement: str = None) -> None:
+    async def speak_in(self, channel: discord.TextChannel, statement: str = None, **kwargs) -> None:
         """
         Hal speaks in a channel.
         :param channel:
         :param statement:
+        :param kwargs: All keyword arguments are passed through `channel.send()`.
         :return:
         """
         # Safety, possible double safety.
@@ -139,7 +111,7 @@ class LilHalJr(commands.Bot):
         await channel.trigger_typing()
         await self.pause(1, len(message) // 4)
 
-        await channel.send(message)
+        await channel.send(message, **kwargs)
 
     def thumbs_up(self, message: discord.Message, up: bool = True) -> None:
         """
@@ -194,7 +166,7 @@ class LilHalJr(commands.Bot):
             return
 
         # Clean up content, altering the message object. Questionable!
-        message.content = self.clean_string(message.content)
+        message.content = helpers.clean_string(message.content)
 
         # Check if he has been muted.
         if message.channel.id in self.quiet_channels or message.author == self.user:
@@ -232,3 +204,17 @@ class LilHalJr(commands.Bot):
         # Clear all silenced channels.
         for channel in guild.channels:
             self.quiet_channels.discard(channel.id)
+
+    # ==================================== COMMANDS ====================================
+    @commands.command(name="help")
+    async def command_help(self, ctx: commands.Context) -> None:
+        """
+        Hal's only built-in command. Accommodates both cases of Hal having/not having commands.
+        """
+        embed = None
+
+        # If Hal has commands:
+        if len(self.commands) > 0:
+            pass  # make help embed
+
+        await self.speak_in(ctx.channel, config.HELP_MESSAGE, embed=embed)

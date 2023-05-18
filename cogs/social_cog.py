@@ -6,8 +6,9 @@ import typing
 import discord
 from discord.ext import commands, tasks
 
-import config
 from bot import LilHalJr
+import config
+import helpers
 
 
 logger = logging.getLogger("lilhaljr")
@@ -34,63 +35,6 @@ class SocialCog(commands.Cog, name="Social"):
         for channel in guild.text_channels:
             if channel.can_send(discord.Message) and keyword.lower() in channel.name.lower():
                 return channel
-
-    @staticmethod
-    def __random_number(percentage: bool = False) -> str:
-        """
-        Creates a random number for Hal to spit out. Returns it as a string.
-        :param percentage: If the number should be a [real] percentage, or not.
-        :return: Written string of a number or percentage.
-        """
-        def flat_numbers(number: str) -> int:
-            """ Converts a string into an int, regardless of decimal presence. """
-            return round(float(number)) if "." in number else int(number)
-
-        def add_decimal(number: str, position: int = None) -> str:
-            """ Adds a decimal at the given position. """
-            # No space for a decimal
-            if len(number) == 1:
-                return number
-
-            elif position is None:
-                position = random.randint(0, len(number))
-
-            return number[:position] + "." + number[position:]
-
-        # Decide length.
-        length = random.sample([0, 1, 2, 3, 4, 5], k=1, counts=[1, 10, 22, 15, 5, 2])[0]
-
-        # Get digits.
-        if length == 0:
-            digits = "0"
-        else:
-            digits = "".join([str(random.randint(0, 9)) for _ in range(length)])
-
-        # Add decimal.
-        if percentage:
-            digits = add_decimal(digits, 2)
-
-        elif not random.randint(0, 3):
-            digits = add_decimal(digits)
-
-        # Final checks
-        while not digits == "0" and digits.startswith("0") and not digits.startswith("0."):
-            digits = digits[1:]
-
-        if digits.startswith("."):
-            digits = f"0{digits}"
-        elif digits.endswith("."):
-            digits = digits[:-1]
-
-        if percentage:
-            digits += "%"
-
-        # If not percentage, possibly turn to hex or binary.
-        elif not random.randint(0, 3):
-            modify = random.sample([hex, bin, oct], k=1, counts=[5, 5, 1])[0]
-            digits = modify(flat_numbers(digits))
-
-        return digits
 
     async def find_quiet_channel(self, condition: typing.Callable[[discord.TextChannel], bool] = None) \
             -> discord.TextChannel:
@@ -236,7 +180,7 @@ class SocialCog(commands.Cog, name="Social"):
             await self.bot_command_interaction(config.TOASTY_ID, ';', ["pokemon", "cat", "cow", "shrug", "lenny"])
 
         # Shake up the time between commands.
-        next_time = self.bot.random_time(6, 21)
+        next_time = helpers.random_time(6, 21)
         self.bot_interaction_loop.change_interval(time=next_time)
         logger.info(f"Bot interaction loop will run again at {next_time}...")
 
@@ -293,12 +237,12 @@ class SocialCog(commands.Cog, name="Social"):
         :param ctx: Context.
         :param query: The user's question.
         """
-        query = self.bot.clean_string(query).split()[0]  # The first word is the question word.
+        query = helpers.clean_string(query).split()[0]  # The first word is the question word.
 
         # Yes/no question.
         if query in {"am", "are", "can", "could", "did", "do", "does", "has", "have", "is", "may", "should", "was",
                      "were", "will", "would"}:
-            answer = self.__random_number(percentage=True)
+            answer = helpers.random_number(percentage=True)
             answer = f"There is a {answer} chance so."
 
         # Anything else.

@@ -5,7 +5,14 @@ TOASTY_ID = 208946659361554432
 SECRET_GUILD = 567541770943070236
 HOME_GUILD = 944731867570143264
 
-# Each phrase is configured in lowercase, and mapped to its rudeness level, 1-5. 
+# Help message
+HELP_MESSAGE = "It seems you have asked about Crane's parody-auto-responder Discord bot. " \
+               "This is an application designed to simulate the ice-cold and magnetic conversational styling of " \
+               "Lil Hal Jr. The algorithms are guaranteed to be in ongoing development, and wonky from time to time. " \
+               "Use `^inquire` with any query, and Lil Hal Jr. will pull a statistical analysis straight out of his " \
+               "ass, just for you."
+
+# Each phrase is configured in lowercase, and mapped to its rudeness level, 1-5. Or 6
 quiet_phrases = {
     "quiet down": 1,
     "no thank you": 1,
@@ -14,7 +21,8 @@ quiet_phrases = {
     "zip it": 3,
     "stop talking": 3,
     "go away": 4,
-    "shut up": 5
+    "shut up": 5,
+    "fuck off": 6
 }
 
 QUIET_EMOJI = "🤫"

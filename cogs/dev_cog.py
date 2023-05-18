@@ -3,6 +3,7 @@ import logging
 import discord
 from discord.ext import commands
 
+import helpers
 from bot import LilHalJr
 import config
 
@@ -34,7 +35,7 @@ class DevCog(commands.Cog, name="Dev"):
         """
         Hal logs quiet channels, reacts with a thumbs up.
         """
-        self.bot.thumbs_up(ctx.message)
+        # self.bot.thumbs_up(ctx.message)
 
         channels = [self.bot.get_channel(i) for i in self.bot.quiet_channels]
 
@@ -43,7 +44,9 @@ class DevCog(commands.Cog, name="Dev"):
         else:
             message = "No quiet channels."
 
-        logger.info(message)
+        embed = helpers.InfoEmbed(message)
+
+        await self.bot.speak_in(ctx.channel, embed=embed)
 
     @commands.command(name="goodnight")
     async def command_good_night(self, ctx: commands.Context):
@@ -68,9 +71,11 @@ class DevCog(commands.Cog, name="Dev"):
         :param new_phrase: A phrase to add to `quiet_keywords`.
         """
         config.quiet_phrases[new_phrase.lower()] = rude_level
-        self.bot.thumbs_up(ctx.message)
+        # self.bot.thumbs_up(ctx.message)
 
-        logger.debug(f"Quiet key phrases: {config.quiet_phrases}")
+        embed = helpers.InfoEmbed(f"Quiet key phrases: {config.quiet_phrases}")
+
+        await self.bot.speak_in(ctx.channel, embed=embed)
 
     @commands.command(name="ping")
     async def command_ping(self, ctx: commands.Context):
