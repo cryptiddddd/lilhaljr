@@ -17,13 +17,13 @@ class LilHalJr(commands.Bot):
     """
     def __init__(self):
         """
-        Initialize Lil Hal Jr. All intents, case insensitive.
+        Initialize Lil Hal Jr. All intents, case-insensitive.
         """
         self.quiet_channels = set()
         super().__init__(command_prefix="^",
                          intents=discord.Intents.all(),
                          case_insensitive=True,
-                         help_command=None)
+                         help_command=helpers.LilHalJrHelp(self))
 
     # ==================================== HELPER OPERATIONS ====================================
     @property
@@ -109,7 +109,7 @@ class LilHalJr(commands.Bot):
 
         # Send.
         await channel.trigger_typing()
-        await self.pause(1, len(message) // 4)
+        await self.pause(1, len(message) % 60 // 4)
 
         await channel.send(message, **kwargs)
 
@@ -144,7 +144,7 @@ class LilHalJr(commands.Bot):
 
         # This is the cycle of waiting that decides when he will acknowledge/participate in conversation.
         try:
-            await self.wait_for('typing', check=check, timeout=wait or random.randint(9, 25) + random.random())
+            await self.wait_for('typing', check=check, timeout=wait or random.randint(5, 12) + random.random())
         except asyncio.TimeoutError:
             await self.speak_in(message.channel)
 
@@ -204,17 +204,3 @@ class LilHalJr(commands.Bot):
         # Clear all silenced channels.
         for channel in guild.channels:
             self.quiet_channels.discard(channel.id)
-
-    # ==================================== COMMANDS ====================================
-    @commands.command(name="help")
-    async def command_help(self, ctx: commands.Context) -> None:
-        """
-        Hal's only built-in command. Accommodates both cases of Hal having/not having commands.
-        """
-        embed = None
-
-        # If Hal has commands:
-        if len(self.commands) > 0:
-            pass  # make help embed
-
-        await self.speak_in(ctx.channel, config.HELP_MESSAGE, embed=embed)

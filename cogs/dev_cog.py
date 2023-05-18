@@ -30,7 +30,7 @@ class DevCog(commands.Cog, name="Dev"):
         """
         return await self.bot.is_owner(ctx.author)
 
-    @commands.command(name="channels")
+    @commands.command(name="channels", help="View currently muted channels.")
     async def command_channels(self, ctx: commands.Context):
         """
         Hal logs quiet channels, reacts with a thumbs up.
@@ -48,7 +48,7 @@ class DevCog(commands.Cog, name="Dev"):
 
         await self.bot.speak_in(ctx.channel, embed=embed)
 
-    @commands.command(name="goodnight")
+    @commands.command(name="goodnight", help="Deactivates Lil Hal Jr safely.")
     async def command_good_night(self, ctx: commands.Context):
         """
         Disconnects and closes Lil Hal Jr safely.
@@ -62,7 +62,7 @@ class DevCog(commands.Cog, name="Dev"):
         await self.bot.close()
         quit(0)
 
-    @commands.command(name="keyword")
+    @commands.command(name="keyword", usage="[ Rude level ] [ New phrase ]", help="Add a new phrase to quiet Hal.")
     async def command_add_keyword(self, ctx: commands.Context, rude_level: int, *, new_phrase: str):
         """
         Allows the developer to add a key phrase to tell Hal to be quiet.
@@ -77,7 +77,7 @@ class DevCog(commands.Cog, name="Dev"):
 
         await self.bot.speak_in(ctx.channel, embed=embed)
 
-    @commands.command(name="ping")
+    @commands.command(name="ping", help="Checks Hal's response.")
     async def command_ping(self, ctx: commands.Context):
         """
         Pings to test Hal's response.

@@ -21,7 +21,7 @@ class SocialCog(commands.Cog, name="Social"):
     def __init__(self, bot: LilHalJr):
         self.bot = bot
 
-        self.bot_interaction_loop.start()
+        # self.bot_interaction_loop.start()
 
     # ==================================== HELPER OPERATIONS ====================================
     @staticmethod
@@ -227,10 +227,12 @@ class SocialCog(commands.Cog, name="Social"):
             await self.wait_until_quiet(channel)
             await self.bot.speak_in(channel, command_usage)
 
+        await self.bot.speak_in(channel, "Thank you.")
         return True
 
     # ==================================== COMMANDS ====================================
-    @commands.command(name="inquire", help="Ask Lil Hal Junior a question.", aliases=["Inquiry", "Ask"])
+    @commands.command(name="inquire", help="Ask Lil Hal Junior a question.", aliases=["Inquiry", "Ask"],
+                      usage="[ Optional question ]")
     async def command_inquire(self, ctx: commands.Context, *, query: str):
         """
         Ask Lil Hal Junior a question, and Lil Hal Junior will respond in the most asinine way.
@@ -247,7 +249,7 @@ class SocialCog(commands.Cog, name="Social"):
 
         # Anything else.
         else:
-            answer = self.__random_number()
+            answer = helpers.random_number()
 
         await self.bot.speak_in(ctx.channel, answer)
 
