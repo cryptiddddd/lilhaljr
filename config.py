@@ -12,17 +12,28 @@ HELP_MESSAGE = "It seems you have asked about Crane's parody-auto-responder Disc
                "Use `^inquire` with any query, and Lil Hal Jr. will pull a statistical analysis straight out of his " \
                "ass, just for you."
 
-# Each phrase is configured in lowercase, and mapped to its rudeness level, 1-5. Or 6
+# Each phrase is configured in lowercase, and mapped to its rudeness level, 1-5. Or 6...
 quiet_phrases = {
     "quiet down": 1,
-    "no thank you": 1,
+    "shh": 1,
     "hush": 1,
+    "shush": 2,
     "be quiet": 2,
     "zip it": 3,
     "stop talking": 3,
+    "put a sock in it": 4,
     "go away": 4,
     "shut up": 5,
-    "fuck off": 6
+    "fuck off": 6,
+    "drop dead": 6
 }
+
+return_phrases = [
+    "come back",
+    "i didnt mean it",
+    "i didnt mean that",
+    "you can talk",
+    ""
+]
 
 QUIET_EMOJI = "🤫"

@@ -73,7 +73,7 @@ class LilHalJr(commands.Bot):
         async def mute_and_wait() -> None:
             """ Coroutine. Mutes for a variable amount of time."""
             self.quiet_channels.add(channel.id)
-            await self.pause(2700, 4500, level)
+            await self.pause(2700, 4500, level)  # TODO: Add waiting loop for a "come back" keywords
             self.quiet_channels.discard(channel.id)
 
         asyncio.create_task(mute_and_wait())
