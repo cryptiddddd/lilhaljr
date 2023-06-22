@@ -82,13 +82,15 @@ class LilHalJr(commands.Bot):
         """ Pausing shortcut, using asyncio.sleep(). Pauses within the given range. """
         # TODO: Redesign, and documentation
         if base_time is None:
+            # Apply multiplier -- work in progress.
             if multiplier is not None:
                 high += round(high * multiplier / 4)
 
-            if low >= high:
-                base_time = low
-            else:
+            # If low is less than high, as it should be.
+            if low < high:
                 base_time = random.randint(low, high)
+            else:
+                base_time = low
 
         await asyncio.sleep(base_time + random.random())
 
@@ -144,7 +146,7 @@ class LilHalJr(commands.Bot):
 
         # This is the cycle of waiting that decides when he will acknowledge/participate in conversation.
         try:
-            await self.wait_for('typing', check=check, timeout=wait or random.randint(5, 12) + random.random())
+            await self.wait_for("typing", check=check, timeout=wait or random.randint(5, 12) + random.random())
         except asyncio.TimeoutError:
             await self.speak_in(message.channel)
 
@@ -160,6 +162,9 @@ class LilHalJr(commands.Bot):
         Lil Hal Junior waits for a gap in conversation to say something
         :param message:
         """
+        if message.components:
+            print(message.components[0].type)
+
         # Process commands. No response if a command was processed.
         await self.process_commands(message)
         if message.channel.last_message.author == self.user:

@@ -127,12 +127,12 @@ class SocialCog(commands.Cog, name="Social"):
         # Say hello
         channel = self.__find_channel_by_keyword(guild, "general")
         if channel is not None:
-            await self.say_hello(channel)
+            asyncio.create_task(self.say_hello(channel))
 
         # Introduce self.
         channel = self.__find_channel_by_keyword(guild, "intro")
         if channel is not None:
-            await self.introduce_to(channel)
+            asyncio.create_task(self.introduce_to(channel))
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
@@ -199,13 +199,13 @@ class SocialCog(commands.Cog, name="Social"):
         :param command_list: List of the given bot's commands to pick from.
         :return: True if an interaction is attempted. False if not.
         """
-        def check(c: discord.TextChannel) -> bool:
+        def quiet_check(c: discord.TextChannel) -> bool:
             """ A check that the bot is in a channel and online. """
             bot = c.guild.get_member(bot_id)
             return bot is not None and bot.status != discord.Status.offline
 
         # Find a quiet channel.
-        channel = await self.find_quiet_channel(check)
+        channel = await self.find_quiet_channel(quiet_check)
         if channel is None:
             return False
 

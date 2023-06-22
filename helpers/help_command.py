@@ -29,7 +29,7 @@ class LilHalJrHelp(commands.HelpCommand):
         if command is not None:
             command = command.lower()
 
-        if command in ["dev", "social", "logging"]:  # Ugh. fixme
+        if command in ["dev", "social", "logging"]:
             command = command.capitalize()
 
         # Carry on.
