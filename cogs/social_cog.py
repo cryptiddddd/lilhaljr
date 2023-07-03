@@ -21,7 +21,7 @@ class SocialCog(commands.Cog, name="Social"):
     def __init__(self, bot: LilHalJr):
         self.bot = bot
 
-        # self.bot_interaction_loop.start()
+        self.bot_interaction_loop.start()
 
     # ==================================== HELPER OPERATIONS ====================================
     @staticmethod
@@ -111,7 +111,7 @@ class SocialCog(commands.Cog, name="Social"):
         while True:
             try:
                 wait = random.randint(9, 25) + random.random()
-                await self.bot.wait_for('typing', check=lambda c, u, w: c == channel, timeout=wait)
+                await self.bot.wait_for("typing", check=lambda c, u, w: c == channel, timeout=wait)
 
             # Loop breaks, return.
             except asyncio.TimeoutError:
@@ -239,19 +239,7 @@ class SocialCog(commands.Cog, name="Social"):
         :param ctx: Context.
         :param query: The user's question.
         """
-        query = helpers.clean_string(query).split()[0]  # The first word is the question word.
-
-        # Yes/no question.
-        if query in {"am", "are", "can", "could", "did", "do", "does", "has", "have", "is", "may", "should", "was",
-                     "were", "will", "would"}:
-            answer = helpers.random_number(percentage=True)
-            answer = f"There is a {answer} chance so."
-
-        # Anything else.
-        else:
-            answer = helpers.random_number()
-
-        await self.bot.speak_in(ctx.channel, answer)
+        await self.bot.speak_in(ctx.channel, helpers.inquire_answer(ctx.message))
 
     @command_inquire.error
     async def command_inquire_error(self, ctx: commands.Context, error: commands.CommandInvokeError):
@@ -262,7 +250,7 @@ class SocialCog(commands.Cog, name="Social"):
         """
         # If there was no question, Hal gives a thumbs down.
         if isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.BadArgument):
-            self.bot.thumbs_up(ctx.message, False)
+            self.bot.emoji_confirmation(ctx.message, False)
 
 
 def setup(bot: LilHalJr) -> None:

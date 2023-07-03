@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import random
+import re
 
 import discord
 from discord.ext import commands
@@ -19,8 +20,10 @@ class LilHalJr(commands.Bot):
         """
         Initialize Lil Hal Jr. All intents, case-insensitive.
         """
+        self.name_pattern = re.compile(r"\bhal\b", re.IGNORECASE)
+
         self.quiet_channels = set()
-        super().__init__(command_prefix="^",
+        super().__init__(command_prefix='^',
                          intents=discord.Intents.all(),
                          case_insensitive=True,
                          help_command=helpers.LilHalJrHelp(self))
@@ -35,25 +38,45 @@ class LilHalJr(commands.Bot):
         return random.choice(["Hmm.", "Yes.", "Interesting."])
 
     # ==================================== HELPER OPERATIONS ====================================
-    async def be_quiet_request(self, message: discord.Message) -> int:
+    async def check_quiet_request(self, message: discord.Message) -> int:
         """
         Reads a message and parses for a request to be quiet.
         :param message: The message to review.
-        :return: A value > 0 if Hal has been told to be quiet. This value is the "rudeness level".
+        :return: A value > 0 if Hal has been told to be quiet. This is the "rudeness level".
         """
         # Not talking to Hal.
         if not await self.is_referenced(message):
             return False
 
-        # Check for keywords.
         original = message.content.lower()
 
-        # Get rudeness level.
+        # Check for keywords/regex, get level.
         for query, level in config.quiet_phrases.items():
-            if query in original:
+            if r"\b" in query and re.findall(query, message.content, re.I):
                 return level
+
+            elif query in original:
+                return level
+
         else:
             return 0
+
+    def emoji_confirmation(self, message: discord.Message, thumbs_up: bool = True) -> None:
+        """
+        Reacts to the given message with an ice-cold thumbs up. Or thumbs down.
+        NOTE: Non-asynchronous. This creates an asyncio task, which will execute in parallel.
+        :param message:
+        :param thumbs_up: True for thumbs up, false for thumbs down.
+        :return:
+        """
+        async def response():
+            """ Pauses, responds to the message. """
+            reaction = '👍' if thumbs_up else '👎'
+
+            await self.pause(base_time=0)  # Tiny pause.
+            await message.add_reaction(reaction)
+
+        asyncio.create_task(response())
 
     async def is_referenced(self, message: discord.Message) -> bool:
         """
@@ -61,8 +84,7 @@ class LilHalJr(commands.Bot):
         :param message:
         :return: True if Hal is pinged, or mentioned by name.
         """
-        return self.user.mentioned_in(message) or "hal" in message.content.split() \
-            or self.user in [m.author async for m in message.channel.history(limit=2)]
+        return self.user.mentioned_in(message) or self.name_pattern.findall(message.content)
 
     def mute_in(self, channel: discord.TextChannel, level: int = 2) -> None:
         """
@@ -115,23 +137,6 @@ class LilHalJr(commands.Bot):
 
         await channel.send(message, **kwargs)
 
-    def thumbs_up(self, message: discord.Message, up: bool = True) -> None:
-        """
-        Reacts to the given message with an ice-cold thumbs up. Or thumbs down.
-        NOTE: Non-asynchronous. This creates an asyncio task, which will execute in parallel.
-        :param message:
-        :param up: True for thumbs up, false for thumbs down.
-        :return:
-        """
-        async def response():
-            """ Pauses, responds to the message. """
-            reaction = '👍' if up else '👎'
-
-            await self.pause(base_time=0)  # Tiny pause.
-            await message.add_reaction(reaction)
-
-        asyncio.create_task(response())
-
     async def wait_loop(self, message: discord.Message) -> None:
         """
         The main event. Waiting loop, eventually speaks if/when it times out.
@@ -162,28 +167,24 @@ class LilHalJr(commands.Bot):
         Lil Hal Junior waits for a gap in conversation to say something
         :param message:
         """
-        if message.components:
-            print(message.components[0].type)
-
         # Process commands. No response if a command was processed.
         await self.process_commands(message)
         if message.channel.last_message.author == self.user:
+            return
+        # Check if he has been muted.
+        elif message.channel.id in self.quiet_channels or message.author == self.user:
             return
 
         # Clean up content, altering the message object. Questionable!
         message.content = helpers.clean_string(message.content)
 
-        # Check if he has been muted.
-        if message.channel.id in self.quiet_channels or message.author == self.user:
-            return
-
-        elif level := await self.be_quiet_request(message):
+        if level := await self.check_quiet_request(message):
             # Confirm request, dispatch mute duration.
-            self.thumbs_up(message)
+            self.emoji_confirmation(message)
             self.mute_in(message.channel, level)
 
         # If the message isn't interesting enough, say nothing.
-        elif len(message.content) < 10:
+        elif len(message.content.split()) < 3:
             return
 
         # The main event.

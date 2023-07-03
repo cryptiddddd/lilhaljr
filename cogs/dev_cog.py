@@ -54,7 +54,7 @@ class DevCog(commands.Cog, name="Dev"):
         Disconnects and closes Lil Hal Jr safely.
         :param ctx:
         """
-        self.bot.thumbs_up(ctx.message)
+        self.bot.emoji_confirmation(ctx.message)
 
         await self.bot.pause(1, 2)
         await self.bot.change_presence(status=discord.Status.offline)
@@ -83,7 +83,7 @@ class DevCog(commands.Cog, name="Dev"):
         Pings to test Hal's response.
         :param ctx:
         """
-        self.bot.thumbs_up(ctx.message)
+        self.bot.emoji_confirmation(ctx.message)
 
 
 def setup(bot: LilHalJr) -> None:

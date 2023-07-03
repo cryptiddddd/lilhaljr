@@ -37,7 +37,7 @@ class LilHalJrHelp(commands.HelpCommand):
 
     async def command_not_found(self, command_name: str) -> None:
         """ Handles missing command. """
-        self.bot.thumbs_up(self.context.message, up=False)
+        self.bot.emoji_confirmation(self.context.message, thumbs_up=False)
 
     async def send_cog_help(self, cog: commands.Cog) -> None:
         """

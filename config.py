@@ -13,11 +13,11 @@ HELP_MESSAGE = "It seems you have asked about Crane's parody-auto-responder Disc
                "ass, just for you."
 
 # Each phrase is configured in lowercase, and mapped to its rudeness level, 1-5. Or 6...
+# Working on regex support...
 quiet_phrases = {
     "quiet down": 1,
-    "shh": 1,
-    "hush": 1,
-    "shush": 2,
+    r"\bs+h+\b": 1,
+    r"\bs*h+u+s+h+\b": 1,
     "be quiet": 2,
     "zip it": 3,
     "stop talking": 3,
@@ -32,8 +32,7 @@ return_phrases = [
     "come back",
     "i didnt mean it",
     "i didnt mean that",
-    "you can talk",
-    ""
+    "you can talk"
 ]
 
 QUIET_EMOJI = "🤫"
