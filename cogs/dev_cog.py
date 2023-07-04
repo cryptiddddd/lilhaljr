@@ -35,12 +35,11 @@ class DevCog(commands.Cog, name="Dev"):
         """
         Hal logs quiet channels, reacts with a thumbs up.
         """
-        # self.bot.thumbs_up(ctx.message)
-
         channels = [self.bot.get_channel(i) for i in self.bot.quiet_channels]
 
         if len(channels) > 0:
-            message = "Quiet channels are: " + ", ".join([ch.name for ch in channels])
+            message = "Quiet channels are: \n" + \
+                      "\n".join([f"{ch.name} : {self.bot.quiet_channels[ch.id]}" for ch in channels])
         else:
             message = "No quiet channels."
 
@@ -61,21 +60,6 @@ class DevCog(commands.Cog, name="Dev"):
 
         await self.bot.close()
         quit(0)
-
-    @commands.command(name="keyword", usage="[ Rude level ] [ New phrase ]", help="Add a new phrase to quiet Hal.")
-    async def command_add_keyword(self, ctx: commands.Context, rude_level: int, *, new_phrase: str):
-        """
-        Allows the developer to add a key phrase to tell Hal to be quiet.
-        :param ctx:
-        :param rude_level: The level of rudeness of the phrase.
-        :param new_phrase: A phrase to add to `quiet_keywords`.
-        """
-        config.quiet_phrases[new_phrase.lower()] = rude_level
-        # self.bot.thumbs_up(ctx.message)
-
-        embed = helpers.InfoEmbed(f"Quiet key phrases: {config.quiet_phrases}")
-
-        await self.bot.speak_in(ctx.channel, embed=embed)
 
     @commands.command(name="ping", help="Checks Hal's response.")
     async def command_ping(self, ctx: commands.Context):

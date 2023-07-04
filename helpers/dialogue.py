@@ -27,7 +27,7 @@ def inquire_answer(message: discord.Message) -> str:
     if not random.randint(0, 200):
         return inquire_non_answer(message)
 
-    query = clean_string(message.content).split()[0]  # The first word is the question word.
+    query = clean_string(message.content).split()[1]  # The first word is the question word.
 
     # Yes/no question.
     if query in {"am", "are", "can", "could", "did", "do", "does", "has", "have", "is", "may", "should", "was",

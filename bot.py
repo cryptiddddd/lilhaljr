@@ -4,7 +4,7 @@ import random
 import re
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 import config
 import helpers
@@ -22,7 +22,7 @@ class LilHalJr(commands.Bot):
         """
         self.name_pattern = re.compile(r"\bhal\b", re.IGNORECASE)
 
-        self.quiet_channels = set()
+        self.quiet_channels = {}
         super().__init__(command_prefix='^',
                          intents=discord.Intents.all(),
                          case_insensitive=True,
@@ -38,29 +38,6 @@ class LilHalJr(commands.Bot):
         return random.choice(["Hmm.", "Yes.", "Interesting."])
 
     # ==================================== HELPER OPERATIONS ====================================
-    async def check_quiet_request(self, message: discord.Message) -> int:
-        """
-        Reads a message and parses for a request to be quiet.
-        :param message: The message to review.
-        :return: A value > 0 if Hal has been told to be quiet. This is the "rudeness level".
-        """
-        # Not talking to Hal.
-        if not await self.is_referenced(message):
-            return False
-
-        original = message.content.lower()
-
-        # Check for keywords/regex, get level.
-        for query, level in config.quiet_phrases.items():
-            if r"\b" in query and re.findall(query, message.content, re.I):
-                return level
-
-            elif query in original:
-                return level
-
-        else:
-            return 0
-
     def emoji_confirmation(self, message: discord.Message, thumbs_up: bool = True) -> None:
         """
         Reacts to the given message with an ice-cold thumbs up. Or thumbs down.
@@ -85,20 +62,6 @@ class LilHalJr(commands.Bot):
         :return: True if Hal is pinged, or mentioned by name.
         """
         return self.user.mentioned_in(message) or self.name_pattern.findall(message.content)
-
-    def mute_in(self, channel: discord.TextChannel, level: int = 2) -> None:
-        """
-        Creates an asyncio task to mute the given channel for a variable amount of time.
-        :param channel: The channel to mute.
-        :param level: The rudeness level.
-        """
-        async def mute_and_wait() -> None:
-            """ Coroutine. Mutes for a variable amount of time."""
-            self.quiet_channels.add(channel.id)
-            await self.pause(2700, 4500, level)  # TODO: Add waiting loop for a "come back" keywords
-            self.quiet_channels.discard(channel.id)
-
-        asyncio.create_task(mute_and_wait())
 
     async def pause(self, low: int = 5, high: int = 20, multiplier: int = None, base_time: int = None) -> None:
         """ Pausing shortcut, using asyncio.sleep(). Pauses within the given range. """
@@ -125,7 +88,7 @@ class LilHalJr(commands.Bot):
         :return:
         """
         # Safety, possible double safety.
-        if channel.id in self.quiet_channels or not channel.can_send(discord.Message):
+        if not channel.can_send(discord.Message):
             return
 
         # Possible overwrite.
@@ -136,6 +99,51 @@ class LilHalJr(commands.Bot):
         await self.pause(1, len(message) % 60 // 4)
 
         await channel.send(message, **kwargs)
+
+    def clean_apprehension(self, modifier: int = 0) -> None:
+        """
+        Cleans up the quiet channel dictionary, removes any unmuted channels.
+        """
+        # Creating a list avoids runtime error.
+        pop_channels = []
+
+        for channel_id, value in self.quiet_channels.items():
+            # Optional modifier
+            if modifier:
+                self.quiet_channels[channel_id] += modifier
+
+            if value < 1:
+                pop_channels.append(channel_id)
+
+        for channel_id in pop_channels:
+            self.quiet_channels.pop(channel_id)
+
+    def update_apprehension(self, message: discord.Message) -> None:
+        """
+        Updates Hal's apprehension in a channel based on a message.
+        :param message:
+        :return:
+        """
+        # If channel is muted, check for unmuting keywords.
+        if message.channel.id in self.quiet_channels.keys() and helpers.check_match(config.return_phrases, message):
+            self.quiet_channels[message.channel.id] = 0
+
+        # Check for muting keywords.
+        # todo: maybe someday, this will hear All the shut up phrases, and add up their values.
+        if mute_request := helpers.check_match(config.quiet_phrases.keys(), message):
+            # Feedback.
+            self.emoji_confirmation(message)
+
+            # Get mute value, plus one for safety.
+            mute_value = config.quiet_phrases[mute_request] + 1
+
+            # Update quiet channels.
+            try:
+                self.quiet_channels[message.channel.id] += mute_value
+            except KeyError:
+                self.quiet_channels[message.channel.id] = mute_value
+
+        self.clean_apprehension()
 
     async def wait_loop(self, message: discord.Message) -> None:
         """
@@ -167,28 +175,22 @@ class LilHalJr(commands.Bot):
         Lil Hal Junior waits for a gap in conversation to say something
         :param message:
         """
-        # Process commands. No response if a command was processed.
-        await self.process_commands(message)
+        # Don't respond to himself.
         if message.channel.last_message.author == self.user:
             return
-        # Check if he has been muted.
-        elif message.channel.id in self.quiet_channels or message.author == self.user:
+
+        # Process commands. No response if a command was processed.
+        await self.process_commands(message)
+
+        # Check for muting/unmuting keywords.
+        self.update_apprehension(message)
+
+        # Check if muted.
+        if message.channel.id in self.quiet_channels or message.author == self.user:
             return
 
-        # Clean up content, altering the message object. Questionable!
-        message.content = helpers.clean_string(message.content)
-
-        if level := await self.check_quiet_request(message):
-            # Confirm request, dispatch mute duration.
-            self.emoji_confirmation(message)
-            self.mute_in(message.channel, level)
-
-        # If the message isn't interesting enough, say nothing.
-        elif len(message.content.split()) < 3:
-            return
-
-        # The main event.
-        else:
+        # Trigger waiting loop if message is long enough.
+        elif len(message.content.split()) > 3:
             await self.wait_loop(message)
 
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.Member | discord.User):
@@ -203,10 +205,19 @@ class LilHalJr(commands.Bot):
 
         # Shushing reaction.
         if reaction.emoji == config.QUIET_EMOJI:
-            self.mute_in(reaction.message.channel)
+            self.quiet_channels[reaction.message.channel.id] = 4  # this should actually add 4, but i'm not there yet.
             logger.info(f"[{reaction.message.channel}] {user} muted Hal.")
 
     async def on_guild_remove(self, guild: discord.Guild):
         # Clear all silenced channels.
         for channel in guild.channels:
-            self.quiet_channels.discard(channel.id)
+            self.quiet_channels.pop(channel.id)
+
+    # ==================================== TASKS ====================================
+    @tasks.loop(minutes=15)
+    async def apprehension_cooldown_loop(self) -> None:
+        """
+        Every fifteen minutes, Hal gets a little less apprehensive in each muted channel.
+        """
+        self.clean_apprehension(-1)
+
