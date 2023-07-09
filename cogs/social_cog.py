@@ -227,11 +227,11 @@ class SocialCog(commands.Cog, name="Social"):
             await self.wait_until_quiet(channel)
             await self.bot.speak_in(channel, command_usage)
 
-        await self.bot.speak_in(channel, "Thank you.")
+        await self.bot.speak_in(channel, helpers.thank_you())
         return True
 
     # ==================================== COMMANDS ====================================
-    @commands.command(name="inquire", help="Ask Lil Hal Junior a question.", aliases=["Inquiry", "Ask"],
+    @commands.command(name="inquire", help="Ask Lil Hal Junior a question.", aliases=["inquiry", "ask"],
                       usage="[ Optional question ]")
     async def command_inquire(self, ctx: commands.Context, *, query: str):
         """
@@ -251,6 +251,15 @@ class SocialCog(commands.Cog, name="Social"):
         # If there was no question, Hal gives a thumbs down.
         if isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.BadArgument):
             self.bot.emoji_confirmation(ctx.message, False)
+
+        # Otherwise let something else handle it.
+        else:
+            raise error
+
+    @commands.command(name="kiss", help="Bestow a kiss upon Lil Hal Junior.")
+    async def command_kiss(self, ctx: commands.Context):
+        """ Gives Lil Hal Junior a kiss, similar to Cranebot's %kiss. """
+        await self.bot.speak_in(ctx.channel, f"Oh, {helpers.thank_you().lower()}")
 
 
 def setup(bot: LilHalJr) -> None:

@@ -129,7 +129,7 @@ class LilHalJr(commands.Bot):
             self.quiet_channels[message.channel.id] = 0
 
         # Check for muting keywords.
-        # todo: maybe someday, this will hear All the shut up phrases, and add up their values.
+        # todo: maybe someday, this will hear All the shut up phrases used, and add up their values.
         if mute_request := helpers.check_match(config.quiet_phrases.keys(), message):
             # Feedback.
             self.emoji_confirmation(message)

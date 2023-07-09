@@ -6,18 +6,6 @@ from .number import random_number
 from .text import clean_string
 
 
-def inquire_non_answer(message: discord.Message) -> str:
-    """
-    Generates "I don't know" message.
-    :param message: The Discord message being answered.
-    :return: A randomized message.
-    """
-    if random.randint(0, 3):
-        return "I just don't know."
-
-    return f"I just don't know, {message.author.name}."
-
-
 def inquire_answer(message: discord.Message) -> str:
     """
     Generates a response for the ^inquire command. Involves a random number, with some punctuation.
@@ -49,3 +37,23 @@ def inquire_answer(message: discord.Message) -> str:
             answer += random.choice("?!")
 
     return answer
+
+
+def inquire_non_answer(message: discord.Message) -> str:
+    """
+    Generates "I don't know" message.
+    :param message: The Discord message being answered.
+    :return: A randomized message.
+    """
+    if random.randint(0, 3):
+        return "I just don't know."
+
+    return f"I just don't know, {message.author.name}."
+
+
+def thank_you() -> str:
+    """
+    Generates "thank you" message.
+    :return: A string ready to send.
+    """
+    return "Thank you."
