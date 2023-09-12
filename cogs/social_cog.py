@@ -161,13 +161,13 @@ class SocialCog(commands.Cog, name="Social"):
 
         # List of possible interactions and their prefixes and commands.
         bot_info = [
-            (config.CRANEBOT_ID, '%', ["pokemon", "beast", "catch", "explode", "meme",
+            (config.CRANEBOT_ID, '%', ["pokemon", "beast", "catch", "explode", "meme", "tarot",
                                        "highfive", "pat", "dex", "bestiary", "randomfact"]),
-            (config.TOASTY_ID, ';', ["pokemon", "cat", "cow", "shrug", "lenny"])
+            # (config.TOASTY_ID, ';', ["pokemon", "cat", "cow", "shrug", "lenny"])
         ]
 
         # Shuffle interactions.
-        random.shuffle(bot_info)
+        # random.shuffle(bot_info)  # Commented out until there are more bots to interact with.
 
         for info in bot_info:
             result = await self.bot_command_interaction(*info)
@@ -222,7 +222,10 @@ class SocialCog(commands.Cog, name="Social"):
                            [config.CRANEBOT_ID, self.bot.user.id]]
                 if len(targets) > 0:
                     mention = random.choice(targets)
-                    command_usage += f" {mention}"
+                    command_usage += " " + mention
+
+            elif command == "tarot" and not random.randint(0, 150):
+                command_usage += " " + helpers.existential_question()
 
             await self.wait_until_quiet(channel)
             await self.bot.speak_in(channel, command_usage)
