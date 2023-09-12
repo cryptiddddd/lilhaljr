@@ -12,7 +12,7 @@ def inquire_answer(message: discord.Message) -> str:
     :param message:
     :return:
     """
-    if not random.randint(0, 200):
+    if not random.randint(0, 150):
         return inquire_non_answer(message)
 
     query = clean_string(message.content).split()[1]  # The first word is the question word.

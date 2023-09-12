@@ -5,7 +5,6 @@ from discord.ext import commands
 
 import helpers
 from bot import LilHalJr
-import config
 
 
 logger = logging.getLogger("lilhaljr")
@@ -47,6 +46,15 @@ class DevCog(commands.Cog, name="Dev"):
 
         await self.bot.speak_in(ctx.channel, embed=embed)
 
+    @commands.command(name="check", help="Checks Lil Hal Jr's key phrases for reference.")
+    async def command_check(self, ctx: commands.Context):
+        """
+        Sends an embed with information on Lil Hal Jr's silencing configuration.
+        :param ctx:
+        """
+        # Send the phrases information embed.
+        await self.bot.speak_in(ctx.channel, embed=helpers.PhrasesEmbed())
+
     @commands.command(name="goodnight", help="Deactivates Lil Hal Jr safely.")
     async def command_good_night(self, ctx: commands.Context):
         """
@@ -61,10 +69,11 @@ class DevCog(commands.Cog, name="Dev"):
         await self.bot.close()
         quit(0)
 
-    @commands.command(name="ping", help="Checks Hal's response.")
+    @commands.command(name="ping", help="Checks Hal's response time.")
     async def command_ping(self, ctx: commands.Context):
         """
         Pings to test Hal's response.
+        TODO: Make this more like the traditional ping command.
         :param ctx:
         """
         self.bot.emoji_confirmation(ctx.message)

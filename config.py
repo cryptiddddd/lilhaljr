@@ -17,7 +17,7 @@ HELP_MESSAGE = "It seems you have asked about Crane's parody-auto-responder Disc
 quiet_phrases = {
     "quiet down": 1,
     r"\bs+h+\b": 1,
-    r"\bs*h+u+s+h+\b": 1,
+    r"\bs*h+u+s+h+": 1,
     "be quiet": 2,
     "zip it": 3,
     "stop talking": 3,

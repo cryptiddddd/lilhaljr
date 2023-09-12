@@ -79,7 +79,7 @@ class LilHalJr(commands.Bot):
 
         await asyncio.sleep(base_time + random.random())
 
-    async def speak_in(self, channel: discord.TextChannel, statement: str = None, **kwargs) -> None:
+    async def speak_in(self, channel: discord.TextChannel, statement: str = None, **kwargs) -> discord.Message | None:
         """
         Hal speaks in a channel.
         :param channel:
@@ -98,11 +98,11 @@ class LilHalJr(commands.Bot):
         await channel.trigger_typing()
         await self.pause(1, len(message) % 60 // 4)
 
-        await channel.send(message, **kwargs)
+        return await channel.send(message, **kwargs)
 
     def clean_apprehension(self, modifier: int = 0) -> None:
         """
-        Cleans up the quiet channel dictionary, removes any unmuted channels.
+        Cleans up the quiet channel dictionary, removes any un-muted channels.
         """
         # Creating a list avoids runtime error.
         pop_channels = []
@@ -129,7 +129,6 @@ class LilHalJr(commands.Bot):
             self.quiet_channels[message.channel.id] = 0
 
         # Check for muting keywords.
-        # todo: maybe someday, this will hear All the shut up phrases used, and add up their values.
         if mute_request := helpers.check_match(config.quiet_phrases.keys(), message):
             # Feedback.
             self.emoji_confirmation(message)

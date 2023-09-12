@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 
+import config
 
 COLOR = discord.Color.from_rgb(242, 164, 0)
 
@@ -69,7 +70,7 @@ class HelpCogEmbed(HelpEmbed):
 
 class InfoEmbed(discord.Embed):
     """
-    A small footer embed for debug/info messages to be sent in Discord.
+    A small footer embed for quick debug/info messages to be sent in Discord.
     """
     def __init__(self, text: str):
         """
@@ -78,3 +79,21 @@ class InfoEmbed(discord.Embed):
         super().__init__(type="rich", color=COLOR)
 
         self.set_footer(text=text)
+
+
+class PhrasesEmbed(discord.Embed):
+    """
+    A more complex embed for debug/dev messages to be sent in Discord.
+    """
+    def __init__(self):
+        """
+        Builds an info embed with the given fields of information.
+        """
+        super().__init__(type="rich", color=COLOR, description=f"Silencing emoji: {config.QUIET_EMOJI}")
+
+        for label, phrases in [
+            ("Silencing phrases", config.quiet_phrases),
+            ("Returning phrases", config.return_phrases)
+        ]:
+            value = "\n".join(phrases)
+            self.add_field(name=label + ":", value=value, inline=True)

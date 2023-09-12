@@ -8,7 +8,7 @@ from bot import LilHalJr
 
 logger = logging.getLogger("lilhaljr")
 
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 form = logging.Formatter(fmt="[%(asctime)s] %(levelname)s :: %(message)s",
                          datefmt="%m/%d/%Y | %H:%M:%S")

@@ -71,17 +71,7 @@ class SocialCog(commands.Cog, name="Social"):
         if len(channels) >= 1:
             return channels[0]
 
-        # # Else, surf through all guilds.
-        # for guild in self.bot.guilds:
-        #     if guild == home_guild:
-        #         continue
-        #
-        #     # Test channels, return first match.
-        #     for channel in guild.text_channels:
-        #         if await validate(channel):
-        #             return channel
-
-    async def introduce_to(self, channel: discord.TextChannel) -> None:
+    async def introduce_self(self, channel: discord.TextChannel) -> None:
         """
         Hal sends an introduction to the given channel.
         :param channel: Expected introduction channel.
@@ -132,7 +122,7 @@ class SocialCog(commands.Cog, name="Social"):
         # Introduce self.
         channel = self.__find_channel_by_keyword(guild, "intro")
         if channel is not None:
-            asyncio.create_task(self.introduce_to(channel))
+            asyncio.create_task(self.introduce_self(channel))
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
@@ -145,8 +135,9 @@ class SocialCog(commands.Cog, name="Social"):
 
         def check(m: discord.Message) -> bool:
             """ Checks that a message is from the new member. """
-            result = m.author == member and m.guild == member.guild
+            result = m.author == member and m.guild == member.guild and "intro" not in m.channel.name.lower()
 
+            # Save the channel.
             if result:
                 channel.append(m.channel)
 
@@ -158,12 +149,9 @@ class SocialCog(commands.Cog, name="Social"):
         except asyncio.TimeoutError:  # If they don't, no big deal.
             return
 
-        # Grab the registered channel.
+        # Grab the saved channel and say hello.
         channel = channel[0]
-
-        # Safeguard.
-        if "intro" not in channel.name.lower():
-            await self.say_hello(channel)
+        await self.say_hello(channel)
 
     # ==================================== LOOPS ====================================
     @tasks.loop(hours=5)
@@ -171,13 +159,25 @@ class SocialCog(commands.Cog, name="Social"):
         """ Every now and again, Hal will try to interact with Cranebot. """
         logger.info("Running bot interaction loop.")
 
-        cranebot_commands = ["pokemon", "beast", "catch", "explode", "meme", "songrec", "highfive", "pat",
-                             "team", "dex", "bestiary", "randomfact", "randomfact", "randomfact"]
-        cranebot_result = await self.bot_command_interaction(config.CRANEBOT_ID, '%', cranebot_commands)
+        # List of possible interactions and their prefixes and commands.
+        bot_info = [
+            (config.CRANEBOT_ID, '%', ["pokemon", "beast", "catch", "explode", "meme",
+                                       "highfive", "pat", "dex", "bestiary", "randomfact"]),
+            (config.TOASTY_ID, ';', ["pokemon", "cat", "cow", "shrug", "lenny"])
+        ]
 
-        # Backup plan:
-        if not cranebot_result and not random.randint(0, 99):
-            await self.bot_command_interaction(config.TOASTY_ID, ';', ["pokemon", "cat", "cow", "shrug", "lenny"])
+        # Shuffle interactions.
+        random.shuffle(bot_info)
+
+        for info in bot_info:
+            result = await self.bot_command_interaction(*info)
+
+            # If no interaction, or by random change, run the next interaction.
+            if not result or not random.randint(0, 10):
+                continue
+
+            # Default is to break.
+            break
 
         # Shake up the time between commands.
         next_time = helpers.random_time(6, 21)
@@ -199,13 +199,13 @@ class SocialCog(commands.Cog, name="Social"):
         :param command_list: List of the given bot's commands to pick from.
         :return: True if an interaction is attempted. False if not.
         """
-        def quiet_check(c: discord.TextChannel) -> bool:
+        def check_online(c: discord.TextChannel) -> bool:
             """ A check that the bot is in a channel and online. """
             bot = c.guild.get_member(bot_id)
             return bot is not None and bot.status != discord.Status.offline
 
-        # Find a quiet channel.
-        channel = await self.find_quiet_channel(quiet_check)
+        # Find a quiet channel that also passes the above test.
+        channel = await self.find_quiet_channel(check_online)
         if channel is None:
             return False
 
