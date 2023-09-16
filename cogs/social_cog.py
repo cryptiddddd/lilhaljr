@@ -161,7 +161,7 @@ class SocialCog(commands.Cog, name="Social"):
 
         # List of possible interactions and their prefixes and commands.
         bot_info = [
-            (config.CRANEBOT_ID, '%', ["pokemon", "beast", "catch", "explode", "meme", "tarot",
+            (config.CRANEBOT_ID, '%', ["pokemon", "beast", "catch", "explode", "meme", "tarot", "beef",
                                        "highfive", "pat", "dex", "bestiary", "randomfact"]),
             # (config.TOASTY_ID, ';', ["pokemon", "cat", "cow", "shrug", "lenny"])
         ]
