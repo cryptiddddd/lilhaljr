@@ -39,7 +39,7 @@ def inquire_answer(message: discord.Message) -> str:
 
         # Random addition.
         if not random.randint(0, 4):
-            answer += random.choice([", however, I'm not sure.", "\b\bat least.", "\b\bat most.", "..."])
+            answer = answer[:-2] + random.choice(["so, however, I'm not sure.", "at least.", "at most.", "..."])
         else:
             answer += "."
 
