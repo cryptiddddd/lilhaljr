@@ -61,11 +61,14 @@ class DevCog(commands.Cog, name="Dev"):
         Disconnects and closes Lil Hal Jr safely.
         :param ctx:
         """
+        # Response
         self.bot.emoji_confirmation(ctx.message)
 
+        # Go offline
         await self.bot.pause(1, 2)
         await self.bot.change_presence(status=discord.Status.offline)
 
+        # Close bot and quit program.
         await self.bot.close()
         quit(0)
 
@@ -73,7 +76,6 @@ class DevCog(commands.Cog, name="Dev"):
     async def command_ping(self, ctx: commands.Context):
         """
         Pings to test Hal's response.
-        TODO: Make this more like the traditional ping command.
         :param ctx:
         """
         self.bot.emoji_confirmation(ctx.message)
