@@ -163,7 +163,7 @@ class SocialCog(commands.Cog, name="Social"):
         bot_info = [
             (config.CRANEBOT_ID, '%', ["pokemon", "beast", "catch", "explode", "meme", "tarot", "beef",
                                        "highfive", "pat", "dex", "bestiary", "randomfact"]),
-            # (config.TOASTY_ID, ';', ["pokemon", "cat", "cow", "shrug", "lenny"])
+            (config.TOASTY_ID, ';', ["pokemon", "cat", "cow", "shrug", "lenny", "punch"])
         ]
 
         # Shuffle interactions.
@@ -223,6 +223,9 @@ class SocialCog(commands.Cog, name="Social"):
                 if len(targets) > 0:
                     mention = random.choice(targets)
                     command_usage += " " + mention
+
+            elif command == "punch":
+                command_usage += " " + channel.guild.get_member(config.TOASTY_ID)
 
             elif command == "tarot" and not random.randint(0, 150):
                 command_usage += " " + helpers.existential_question()
