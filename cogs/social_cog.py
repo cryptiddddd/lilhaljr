@@ -167,7 +167,7 @@ class SocialCog(commands.Cog, name="Social"):
         ]
 
         # Shuffle interactions.
-        # random.shuffle(bot_info)  # Commented out until there are more bots to interact with.
+        random.shuffle(bot_info)  # Commented out until there are more bots to interact with.
 
         for info in bot_info:
             result = await self.bot_command_interaction(*info)
