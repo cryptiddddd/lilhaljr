@@ -36,6 +36,9 @@ class Scrabble:
         function as the class, without constructing a Scrabble object.
         :param n: How many tiles to draw. Default is 7, the amount one draws in a real game of Scrabble.
         """
+        if n > sum(cls.COUNTS):
+            raise ValueError("Not enough Scrabble tiles.")
+
         # Draw sample.
         letters = random.sample(cls.LETTERS, counts=cls.COUNTS, k=n)
 

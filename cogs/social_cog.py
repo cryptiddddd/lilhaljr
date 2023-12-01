@@ -196,7 +196,6 @@ class SocialCog(commands.Cog, name="Social"):
 
         def msg_check(m: discord.Message) -> bool:
             """ For checking that the command yields a response. """
-            print("checking messsge)")
             return m.author.id == bot_id and m.channel == channel
 
         # Use a couple commands, waiting for responses in between.
@@ -261,8 +260,21 @@ class SocialCog(commands.Cog, name="Social"):
     async def command_scrabble(self, ctx: commands.Context, tiles: int = 7):
         """ Draws an amount of Scrabble tiles for the user to contemplate. """
         letters = helpers.Scrabble.single_draw(tiles)
-
         await common.speak_in(ctx.channel, " ".join(f"` {i} `" for i in letters))
+
+    @command_scrabble.error
+    async def command_scrabble_error(self, ctx: commands.Context, error: Exception):
+        """ Error handling for Scrabble. """
+        if isinstance(error, ValueError):
+            common.emoji_confirmation(ctx.message, thumbs_up=False)
+            await common.speak_in(ctx.channel, random.choice([
+                "Not enough Scrabble tiles in the bag.",
+                "There are only 98 tiles in the bag.",
+                "I have only 98 Scrabble tiles."
+            ]))
+
+        else:
+            raise error
 
 
 def setup(bot: LilHalJr) -> None:
