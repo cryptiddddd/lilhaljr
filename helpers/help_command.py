@@ -60,7 +60,7 @@ class LilHalJrHelp(commands.HelpCommand):
         channel = self.get_destination()
         embed = HelpCommandEmbed(command)
 
-        await self.bot.speak_in(channel, embed=embed)
+        await common.speak_in(channel, embed=embed)
 
     async def send_bot_help(self, *_ignore) -> None:
         """
@@ -69,4 +69,4 @@ class LilHalJrHelp(commands.HelpCommand):
         :return: No return value.
         """
         channel = self.get_destination()
-        await self.bot.speak_in(channel, config.HELP_MESSAGE)
+        await common.speak_in(channel, config.HELP_MESSAGE)

@@ -31,15 +31,6 @@ class LilHalJr(commands.Bot):
                          help_command=helpers.LilHalJrHelp(self))
 
     # ==================================== HELPER OPERATIONS ====================================
-    @property
-    def dialogue(self) -> str:
-        """ Returns Lil Hal Junior's famous catchphrase. """
-        if not random.randint(0, 199):
-            return "Oh."
-
-        return random.choice(["Hmm.", "Yes.", "Interesting."])
-
-    # ==================================== HELPER OPERATIONS ====================================
     async def is_referenced(self, message: discord.Message) -> bool:
         """
         Checks if Hal is mentioned/referenced in the given message.

@@ -3,6 +3,8 @@ import random
 
 import discord
 
+import helpers
+
 
 # ====================== SYNCHRONOUS FUNCTIONS
 def emoji_confirmation(message: discord.Message, thumbs_up: bool = True) -> None:
@@ -54,7 +56,7 @@ async def speak_in(channel: discord.TextChannel, message: str = None, **kwargs) 
         return
 
     if message is None:
-        message = random.choice(["Hmm", "Yes", "Interesting"]) + "."
+        message = helpers.basic()
 
     # Send.
     await channel.trigger_typing()

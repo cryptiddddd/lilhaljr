@@ -161,8 +161,10 @@ class SocialCog(commands.Cog, name="Social"):
 
         # List of possible interactions and their prefixes and commands.
         bot_info = [
-            (config.CRANEBOT_ID, '%', ["pokemon", "beast", "catch", "explode", "meme", "tarot", "beef",
-                                       "highfive", "pat", "dex", "bestiary", "randomfact"]),
+            (config.CRANEBOT_ID, '%',
+             ["pokemon", "beast", "catch", "explode", "meme", "tarot", "beef", "highfive", "pat", "dex",
+              "bestiary", "randomfact"],
+             [7, 7, 3, 7, 6, 5, 6, 4, 4, 1, 1, 6]),
             (config.TOASTY_ID, ';', ["pokemon", "cat", "cow", "shrug", "lenny", "punch"])
         ]
 
@@ -191,12 +193,14 @@ class SocialCog(commands.Cog, name="Social"):
 
         logger.info("Starting bot interaction loop...")
 
-    async def bot_command_interaction(self, bot_id: int, command_prefix: str, command_list: list[str]) -> bool:
+    async def bot_command_interaction(self, bot_id: int, command_prefix: str,
+                                      command_list: list[str], command_weights: list[int] = None) -> bool:
         """
         Attempts to interact with another bot through commands.
         :param bot_id: Discord user ID of the bot.
         :param command_prefix: The bot's prefix.
         :param command_list: List of the given bot's commands to pick from.
+        :param command_weights: Command weights, optional.
         :return: True if an interaction is attempted. False if not.
         """
         def check_online(c: discord.TextChannel) -> bool:
@@ -209,29 +213,48 @@ class SocialCog(commands.Cog, name="Social"):
         if channel is None:
             return False
 
-        # Use a couple commands, waiting in between.
-        coms = random.choices(command_list, k=random.randint(1, 3))
+        def check(m: discord.Message) -> bool:
+            """ For checking that the command yields a response. """
+            return m.author.id == bot_id and m.channel == channel
+
+        # Use a couple commands, waiting for responses in between.
+        coms = random.choices(command_list, k=random.randint(1, 3), weights=command_weights)
 
         for command in coms:
             command_usage = f"{command_prefix}{command.capitalize()}"
 
             # Special command cases.
             if command == "explode":
+                # Random chance of Toasty targeting, if applicable.
+                if not random.randint(0, 5) and (toasty := channel.guild.get_member(config.TOASTY_ID)):
+                    targets = [toasty]
+
                 # Possible targets, anyone but self and Cranebot.
-                targets = [m.author.mention async for m in channel.history(limit=3) if m.author.id not in
-                           [config.CRANEBOT_ID, self.bot.user.id]]
+                else:
+                    targets = [m.author.mention async for m in channel.history(limit=3) if m.author.id not in
+                               [config.CRANEBOT_ID, self.bot.user.id]]
+
                 if len(targets) > 0:
                     mention = random.choice(targets)
                     command_usage += " " + mention
 
             elif command == "punch":
-                command_usage += " " + channel.guild.get_member(config.TOASTY_ID)
+                command_usage += " " + channel.guild.get_member(config.TOASTY_ID).mention
 
             elif command == "tarot" and not random.randint(0, 150):
                 command_usage += " " + helpers.existential_question()
 
             await self.wait_until_quiet(channel)
             await common.speak_in(channel, command_usage)
+
+            # Wait for a response.
+            try:
+                await self.bot.wait_for("message", check=check, timeout=random.randint(20, 40))
+
+            # Be sad if there is none.
+            except asyncio.TimeoutError:
+                await common.speak_in(channel, helpers.disappointment())
+                return False
 
         await common.speak_in(channel, helpers.thank_you())
         return True

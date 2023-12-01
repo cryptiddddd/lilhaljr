@@ -6,6 +6,14 @@ from .number import random_number
 from .text import clean_string
 
 
+def basic() -> str:
+    """ Returns Lil Hal Junior's famous catchphrase. """
+    if not random.randint(0, 199):
+        return "Oh."
+
+    return random.choice(["Hmm.", "Yes.", "Interesting."])
+
+
 def existential_question() -> str:
     """
     Generates a randomized existential question for Lil Hal Jr to ask.
@@ -71,3 +79,20 @@ def thank_you() -> str:
     :return: A string ready to send.
     """
     return random.choice(["Thank you.", "Thank you very much.", "Thanks.", "Cool."])
+
+
+def disappointment() -> str:
+    """ Generates disappointment. """
+    case = random.choices([0, 1, 2, 3], k=1, weights=[3, 5, 4, 1])
+
+    if case == 0:
+        return random.choice(["Why do I bother", "Where are you"]) + random.choice("?.")
+
+    elif case == 1:
+        return "." * random.randint(3, 6)
+
+    elif case == 2:
+        return random.choice(["Oh", "Nevermind", "Oh, nevermind", "I guess not", "Ok", "Hmm"]) + "."
+
+    elif case == 3:
+        return "What the fuck."
