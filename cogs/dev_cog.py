@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 
 import helpers
-from bot import LilHalJr
+from bot import LilHalJr, common
 
 
 logger = logging.getLogger("lilhaljr")
@@ -44,7 +44,7 @@ class DevCog(commands.Cog, name="Dev"):
 
         embed = helpers.InfoEmbed(message)
 
-        await self.bot.speak_in(ctx.channel, embed=embed)
+        await common.speak_in(ctx.channel, embed=embed)
 
     @commands.command(name="check", help="Checks Lil Hal Jr's key phrases for reference.")
     async def command_check(self, ctx: commands.Context):
@@ -53,7 +53,7 @@ class DevCog(commands.Cog, name="Dev"):
         :param ctx:
         """
         # Send the phrases information embed.
-        await self.bot.speak_in(ctx.channel, embed=helpers.PhrasesEmbed())
+        await common.speak_in(ctx.channel, embed=helpers.PhrasesEmbed())
 
     @commands.command(name="goodnight", help="Deactivates Lil Hal Jr safely.")
     async def command_good_night(self, ctx: commands.Context):
@@ -62,10 +62,10 @@ class DevCog(commands.Cog, name="Dev"):
         :param ctx:
         """
         # Response
-        self.bot.emoji_confirmation(ctx.message)
+        common.emoji_confirmation(ctx.message)
 
         # Go offline
-        await self.bot.pause(1, 2)
+        await common.pause(1, 2)
         await self.bot.change_presence(status=discord.Status.offline)
 
         # Close bot and quit program.
@@ -78,7 +78,7 @@ class DevCog(commands.Cog, name="Dev"):
         Pings to test Hal's response.
         :param ctx:
         """
-        self.bot.emoji_confirmation(ctx.message)
+        common.emoji_confirmation(ctx.message)
 
 
 def setup(bot: LilHalJr) -> None:

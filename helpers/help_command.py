@@ -1,6 +1,7 @@
 from discord.ext import commands
 
 import config
+from bot import common
 
 from .views import HelpCogEmbed, HelpCommandEmbed
 
@@ -37,7 +38,7 @@ class LilHalJrHelp(commands.HelpCommand):
 
     async def command_not_found(self, command_name: str) -> None:
         """ Handles missing command. """
-        self.bot.emoji_confirmation(self.context.message, thumbs_up=False)
+        common.emoji_confirmation(self.context.message, thumbs_up=False)
 
     async def send_cog_help(self, cog: commands.Cog) -> None:
         """
@@ -48,7 +49,7 @@ class LilHalJrHelp(commands.HelpCommand):
         channel = self.get_destination()
         embed = HelpCogEmbed(cog)
 
-        await self.bot.speak_in(channel, embed=embed)
+        await common.speak_in(channel, embed=embed)
 
     async def send_command_help(self, command: commands.Command) -> None:
         """

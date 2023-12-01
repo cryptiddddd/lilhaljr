@@ -36,3 +36,12 @@ return_phrases = [
 ]
 
 QUIET_EMOJI = "🤫"
+
+
+bad_words = [
+    "kike",
+    "cripple",
+    "retard",
+    "nigg",
+    "chink"
+]

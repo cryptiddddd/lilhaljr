@@ -9,6 +9,8 @@ from discord.ext import commands, tasks
 import config
 import helpers
 
+from . import common
+
 logger = logging.getLogger("lilhaljr")
 
 
@@ -38,23 +40,6 @@ class LilHalJr(commands.Bot):
         return random.choice(["Hmm.", "Yes.", "Interesting."])
 
     # ==================================== HELPER OPERATIONS ====================================
-    def emoji_confirmation(self, message: discord.Message, thumbs_up: bool = True) -> None:
-        """
-        Reacts to the given message with an ice-cold thumbs up. Or thumbs down.
-        NOTE: Non-asynchronous. This creates an asyncio task, which will execute in parallel.
-        :param message:
-        :param thumbs_up: True for thumbs up, false for thumbs down.
-        :return:
-        """
-        async def response():
-            """ Pauses, responds to the message. """
-            reaction = '👍' if thumbs_up else '👎'
-
-            await self.pause(base_time=0)  # Tiny pause.
-            await message.add_reaction(reaction)
-
-        asyncio.create_task(response())
-
     async def is_referenced(self, message: discord.Message) -> bool:
         """
         Checks if Hal is mentioned/referenced in the given message.
@@ -62,43 +47,6 @@ class LilHalJr(commands.Bot):
         :return: True if Hal is pinged, or mentioned by name.
         """
         return self.user.mentioned_in(message) or self.name_pattern.findall(message.content)
-
-    async def pause(self, low: int = 5, high: int = 20, multiplier: int = None, base_time: int = None) -> None:
-        """ Pausing shortcut, using asyncio.sleep(). Pauses within the given range. """
-        # TODO: Redesign, and documentation
-        if base_time is None:
-            # Apply multiplier -- work in progress.
-            if multiplier is not None:
-                high += round(high * multiplier / 4)
-
-            # If low is less than high, as it should be.
-            if low < high:
-                base_time = random.randint(low, high)
-            else:
-                base_time = low
-
-        await asyncio.sleep(base_time + random.random())
-
-    async def speak_in(self, channel: discord.TextChannel, statement: str = None, **kwargs) -> discord.Message | None:
-        """
-        Hal speaks in a channel.
-        :param channel:
-        :param statement:
-        :param kwargs: All keyword arguments are passed through `channel.send()`.
-        :return:
-        """
-        # Safety, possible double safety.
-        if not channel.can_send(discord.Message):
-            return
-
-        # Possible overwrite.
-        message = self.dialogue if statement is None else statement
-
-        # Send.
-        await channel.trigger_typing()
-        await self.pause(1, len(message) % 60 // 4)
-
-        return await channel.send(message, **kwargs)
 
     def clean_apprehension(self, modifier: int = 0) -> None:
         """
@@ -131,7 +79,7 @@ class LilHalJr(commands.Bot):
         # Check for muting keywords.
         if mute_request := helpers.check_match(config.quiet_phrases.keys(), message):
             # Feedback.
-            self.emoji_confirmation(message)
+            common.emoji_confirmation(message)
 
             # Get mute value, plus one for safety.
             mute_value = config.quiet_phrases[mute_request] + 1
@@ -160,7 +108,7 @@ class LilHalJr(commands.Bot):
         try:
             await self.wait_for("typing", check=check, timeout=wait or random.randint(5, 12) + random.random())
         except asyncio.TimeoutError:
-            await self.speak_in(message.channel)
+            await common.speak_in(message.channel)
 
     # ==================================== EVENTS ====================================
     async def on_ready(self):
@@ -181,7 +129,7 @@ class LilHalJr(commands.Bot):
         # Process commands. No response if a command was processed.
         await self.process_commands(message)
 
-        # Check for muting/unmuting keywords.
+        # Check for muting/un-muting keywords.
         self.update_apprehension(message)
 
         # Check if muted.

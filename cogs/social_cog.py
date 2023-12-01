@@ -6,7 +6,7 @@ import typing
 import discord
 from discord.ext import commands, tasks
 
-from bot import LilHalJr
+from bot import LilHalJr, common
 import config
 import helpers
 
@@ -77,10 +77,10 @@ class SocialCog(commands.Cog, name="Social"):
         :param channel: Expected introduction channel.
         :return: No return value
         """
-        await self.bot.pause(20, 25)
+        await common.pause(20, 25)
         intro = "Hal\nHe/It\nI can quiet down when you tell me."
 
-        await self.bot.speak_in(channel, intro)
+        await common.speak_in(channel, intro)
 
     async def say_hello(self, channel: discord.TextChannel) -> None:
         """
@@ -88,8 +88,8 @@ class SocialCog(commands.Cog, name="Social"):
         :param channel: Channel in which to say hello.
         :return: No return value
         """
-        await self.bot.pause(5, 10)
-        await self.bot.speak_in(channel, "Hello.")
+        await common.pause(5, 10)
+        await common.speak_in(channel, "Hello.")
 
     async def wait_until_quiet(self, channel: discord.TextChannel) -> None:
         """
@@ -231,9 +231,9 @@ class SocialCog(commands.Cog, name="Social"):
                 command_usage += " " + helpers.existential_question()
 
             await self.wait_until_quiet(channel)
-            await self.bot.speak_in(channel, command_usage)
+            await common.speak_in(channel, command_usage)
 
-        await self.bot.speak_in(channel, helpers.thank_you())
+        await common.speak_in(channel, helpers.thank_you())
         return True
 
     # ==================================== COMMANDS ====================================
@@ -245,7 +245,7 @@ class SocialCog(commands.Cog, name="Social"):
         :param ctx: Context.
         :param query: The user's question.
         """
-        await self.bot.speak_in(ctx.channel, helpers.inquire_answer(ctx.message))
+        await common.speak_in(ctx.channel, helpers.inquire_answer(ctx.message))
 
     @command_inquire.error
     async def command_inquire_error(self, ctx: commands.Context, error: commands.CommandInvokeError):
@@ -256,7 +256,7 @@ class SocialCog(commands.Cog, name="Social"):
         """
         # If there was no question, Hal gives a thumbs down.
         if isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.BadArgument):
-            self.bot.emoji_confirmation(ctx.message, False)
+            common.emoji_confirmation(ctx.message, False)
 
         # Otherwise let something else handle it.
         else:
@@ -265,7 +265,14 @@ class SocialCog(commands.Cog, name="Social"):
     @commands.command(name="kiss", help="Bestow a kiss upon Lil Hal Junior.")
     async def command_kiss(self, ctx: commands.Context):
         """ Gives Lil Hal Junior a kiss, similar to Cranebot's %kiss. """
-        await self.bot.speak_in(ctx.channel, f"Oh, {helpers.thank_you().lower()}")
+        await common.speak_in(ctx.channel, f"Oh, {helpers.thank_you().lower()}")
+
+    @commands.command(name="scrabble", help="Draw Scrabble tiles.")
+    async def command_scrabble(self, ctx: commands.Context, tiles: int = 7):
+        """ Draws an amount of Scrabble tiles for the user to contemplate. """
+        letters = helpers.Scrabble.single_draw(tiles)
+
+        await common.speak_in(ctx.channel, " ".join(f"` {i} `" for i in letters))
 
 
 def setup(bot: LilHalJr) -> None:
