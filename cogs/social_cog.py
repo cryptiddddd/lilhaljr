@@ -134,10 +134,18 @@ class SocialCog(commands.Cog, name="Social"):
         channel = channel[0]
         await common.say_hello(channel)
 
+    # @commands.Cog.listener()
+    # async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
+    #     """ When a general command error occurs. """
+    #     print(error, type(error))
+    #
+    #     if isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.BadArgument):
+    #         common.emoji_confirmation(ctx.message, False)
+
     # ==================================== LOOPS ====================================
     @tasks.loop(hours=5)
     async def bot_interaction_loop(self):
-        """ Every now and again, Hal will try to interact with Cranebot. """
+        """ Every now and again, Hal will try to interact with other bots. """
         logger.info("Running bot interaction loop.")
 
         # List of possible interactions and their prefixes and commands.
@@ -263,18 +271,15 @@ class SocialCog(commands.Cog, name="Social"):
         await common.speak_in(ctx.channel, " ".join(f"` {i} `" for i in letters))
 
     @command_scrabble.error
-    async def command_scrabble_error(self, ctx: commands.Context, error: Exception):
+    async def command_scrabble_error(self, ctx: commands.Context, error: commands.CommandError):
         """ Error handling for Scrabble. """
-        if isinstance(error, ValueError):
+        if isinstance(error, commands.CommandInvokeError) and isinstance(error.original, ValueError):
             common.emoji_confirmation(ctx.message, thumbs_up=False)
             await common.speak_in(ctx.channel, random.choice([
                 "Not enough Scrabble tiles in the bag.",
                 "There are only 98 tiles in the bag.",
                 "I have only 98 Scrabble tiles."
             ]))
-
-        else:
-            raise error
 
 
 def setup(bot: LilHalJr) -> None:

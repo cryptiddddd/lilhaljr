@@ -119,7 +119,7 @@ class LilHalJr(commands.Bot):
         # Process commands. No response if a command was processed.
         await self.process_commands(message)
 
-        # Check for muting/un-muting keywords.
+        # Check for muting/unmuting keywords.
         self.update_apprehension(message)
 
         # Check if muted.
@@ -150,7 +150,7 @@ class LilHalJr(commands.Bot):
         for channel in guild.channels:
             common.muted_channels.pop(channel.id)
 
-    async def on_command_error(self, ctx: commands.Context, error: Exception) -> None:
+    async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
         """ When a general command error occurs. """
         if isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.BadArgument):
             common.emoji_confirmation(ctx.message, False)
