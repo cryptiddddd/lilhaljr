@@ -24,7 +24,6 @@ class LilHalJr(commands.Bot):
         """
         self.name_pattern = re.compile(r"\bhal\b", re.IGNORECASE)
 
-        self.quiet_channels = {}
         super().__init__(command_prefix='^',
                          intents=discord.Intents.all(),
                          case_insensitive=True,
@@ -41,21 +40,21 @@ class LilHalJr(commands.Bot):
 
     def clean_apprehension(self, modifier: int = 0) -> None:
         """
-        Cleans up the quiet channel dictionary, removes any un-muted channels.
+        Cleans up the quiet channel dictionary, removes any unmuted channels.
         """
         # Creating a list avoids runtime error.
         pop_channels = []
 
-        for channel_id, value in self.quiet_channels.items():
+        for channel_id, value in common.muted_channels.items():
             # Optional modifier
             if modifier:
-                self.quiet_channels[channel_id] += modifier
+                common.muted_channels[channel_id] += modifier
 
             if value < 1:
                 pop_channels.append(channel_id)
 
         for channel_id in pop_channels:
-            self.quiet_channels.pop(channel_id)
+            common.muted_channels.pop(channel_id)
 
     def update_apprehension(self, message: discord.Message) -> None:
         """
@@ -64,8 +63,8 @@ class LilHalJr(commands.Bot):
         :return:
         """
         # If channel is muted, check for unmuting keywords.
-        if message.channel.id in self.quiet_channels.keys() and helpers.check_match(config.return_phrases, message):
-            self.quiet_channels[message.channel.id] = 0
+        if message.channel.id in common.muted_channels.keys() and helpers.check_match(config.return_phrases, message):
+            common.muted_channels[message.channel.id] = 0
 
         # Check for muting keywords.
         if mute_request := helpers.check_match(config.quiet_phrases.keys(), message):
@@ -77,9 +76,9 @@ class LilHalJr(commands.Bot):
 
             # Update quiet channels.
             try:
-                self.quiet_channels[message.channel.id] += mute_value
+                common.muted_channels[message.channel.id] += mute_value
             except KeyError:
-                self.quiet_channels[message.channel.id] = mute_value
+                common.muted_channels[message.channel.id] = mute_value
 
         self.clean_apprehension()
 
@@ -124,7 +123,7 @@ class LilHalJr(commands.Bot):
         self.update_apprehension(message)
 
         # Check if muted.
-        if message.channel.id in self.quiet_channels or message.author == self.user:
+        if message.channel.id in common.muted_channels or message.author == self.user:
             return
 
         # Trigger waiting loop if message is long enough.
@@ -143,13 +142,18 @@ class LilHalJr(commands.Bot):
 
         # Shushing reaction.
         if reaction.emoji == config.QUIET_EMOJI:
-            self.quiet_channels[reaction.message.channel.id] = 4  # this should actually add 4, but i'm not there yet.
+            common.muted_channels[reaction.message.channel.id] = 4  # this should actually add 4, but i'm not there yet.
             logger.info(f"[{reaction.message.channel}] {user} muted Hal.")
 
     async def on_guild_remove(self, guild: discord.Guild):
         # Clear all silenced channels.
         for channel in guild.channels:
-            self.quiet_channels.pop(channel.id)
+            common.muted_channels.pop(channel.id)
+
+    async def on_command_error(self, ctx: commands.Context, error: Exception) -> None:
+        """ When a general command error occurs. """
+        if isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.BadArgument):
+            common.emoji_confirmation(ctx.message, False)
 
     # ==================================== TASKS ====================================
     @tasks.loop(minutes=15)

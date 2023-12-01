@@ -54,7 +54,8 @@ class SocialCog(commands.Cog, name="Social"):
 
         # Get a list of candidate channels. Checks home guild first.
         home_guild = self.bot.get_guild(config.HOME_GUILD)
-        channels = list(filter(validate, home_guild.text_channels))
+        secret_guild = self.bot.get_guild(config.SECRET_GUILD)
+        channels = list(filter(validate, home_guild.text_channels + secret_guild.text_channels))
 
         def channel_check(ch: discord.TextChannel, *_) -> bool:
             """ Checks if the typing channel is in the list. """
@@ -70,26 +71,6 @@ class SocialCog(commands.Cog, name="Social"):
 
         if len(channels) >= 1:
             return channels[0]
-
-    async def introduce_self(self, channel: discord.TextChannel) -> None:
-        """
-        Hal sends an introduction to the given channel.
-        :param channel: Expected introduction channel.
-        :return: No return value
-        """
-        await common.pause(20, 25)
-        intro = "Hal\nHe/It\nI can quiet down when you tell me."
-
-        await common.speak_in(channel, intro)
-
-    async def say_hello(self, channel: discord.TextChannel) -> None:
-        """
-        Hal says hello.
-        :param channel: Channel in which to say hello.
-        :return: No return value
-        """
-        await common.pause(5, 10)
-        await common.speak_in(channel, "Hello.")
 
     async def wait_until_quiet(self, channel: discord.TextChannel) -> None:
         """
@@ -117,12 +98,12 @@ class SocialCog(commands.Cog, name="Social"):
         # Say hello
         channel = self.__find_channel_by_keyword(guild, "general")
         if channel is not None:
-            asyncio.create_task(self.say_hello(channel))
+            asyncio.create_task(common.say_hello(channel))
 
         # Introduce self.
         channel = self.__find_channel_by_keyword(guild, "intro")
         if channel is not None:
-            asyncio.create_task(self.introduce_self(channel))
+            asyncio.create_task(common.introduce_self(channel))
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
@@ -145,13 +126,13 @@ class SocialCog(commands.Cog, name="Social"):
 
         # Wait for them to say something.
         try:
-            await self.bot.wait_for("message", check=check, timeout=3600)
+            await self.bot.wait_for("message", check=check, timeout=60)
         except asyncio.TimeoutError:  # If they don't, no big deal.
             return
 
         # Grab the saved channel and say hello.
         channel = channel[0]
-        await self.say_hello(channel)
+        await common.say_hello(channel)
 
     # ==================================== LOOPS ====================================
     @tasks.loop(hours=5)
@@ -213,15 +194,16 @@ class SocialCog(commands.Cog, name="Social"):
         if channel is None:
             return False
 
-        def check(m: discord.Message) -> bool:
+        def msg_check(m: discord.Message) -> bool:
             """ For checking that the command yields a response. """
+            print("checking messsge)")
             return m.author.id == bot_id and m.channel == channel
 
         # Use a couple commands, waiting for responses in between.
         coms = random.choices(command_list, k=random.randint(1, 3), weights=command_weights)
 
         for command in coms:
-            command_usage = f"{command_prefix}{command.capitalize()}"
+            command_usage = command_prefix + command.capitalize()
 
             # Special command cases.
             if command == "explode":
@@ -249,9 +231,9 @@ class SocialCog(commands.Cog, name="Social"):
 
             # Wait for a response.
             try:
-                await self.bot.wait_for("message", check=check, timeout=random.randint(20, 40))
+                await self.bot.wait_for("message", check=msg_check, timeout=random.randint(10, 25))
 
-            # Be sad if there is none.
+            # Be sad if there is none, return value indicating no response.
             except asyncio.TimeoutError:
                 await common.speak_in(channel, helpers.disappointment())
                 return False
@@ -269,21 +251,6 @@ class SocialCog(commands.Cog, name="Social"):
         :param query: The user's question.
         """
         await common.speak_in(ctx.channel, helpers.inquire_answer(ctx.message))
-
-    @command_inquire.error
-    async def command_inquire_error(self, ctx: commands.Context, error: commands.CommandInvokeError):
-        """
-        Handles errors for ^Inquire.
-        :param ctx: Context of command's invoke.
-        :param error: The error on invoking ^Inquire
-        """
-        # If there was no question, Hal gives a thumbs down.
-        if isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.BadArgument):
-            common.emoji_confirmation(ctx.message, False)
-
-        # Otherwise let something else handle it.
-        else:
-            raise error
 
     @commands.command(name="kiss", help="Bestow a kiss upon Lil Hal Junior.")
     async def command_kiss(self, ctx: commands.Context):

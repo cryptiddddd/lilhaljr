@@ -83,7 +83,7 @@ def thank_you() -> str:
 
 def disappointment() -> str:
     """ Generates disappointment. """
-    case = random.choices([0, 1, 2, 3], k=1, weights=[3, 5, 4, 1])
+    case = random.choices([0, 1, 2, 3], k=1, weights=[4, 10, 8, 1])[0]
 
     if case == 0:
         return random.choice(["Why do I bother", "Where are you"]) + random.choice("?.")
@@ -96,3 +96,6 @@ def disappointment() -> str:
 
     elif case == 3:
         return "What the fuck."
+
+    else:
+        return "I am disappointed" + "." * random.randint(1, 6)

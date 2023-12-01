@@ -31,16 +31,14 @@ class DevCog(commands.Cog, name="Dev"):
 
     @commands.command(name="channels", help="View currently muted channels.")
     async def command_channels(self, ctx: commands.Context):
-        """
-        Hal logs quiet channels, reacts with a thumbs up.
-        """
-        channels = [self.bot.get_channel(i) for i in self.bot.quiet_channels]
+        """ Hal sends a list of muted channels. """
+        channels = [self.bot.get_channel(i) for i in common.muted_channels]
 
         if len(channels) > 0:
-            message = "Quiet channels are: \n" + \
-                      "\n".join([f"{ch.name} : {self.bot.quiet_channels[ch.id]}" for ch in channels])
+            message = "Muted channels are: \n" + \
+                      "\n".join([f"{ch.name} : {common.muted_channels[ch.id]}" for ch in channels])
         else:
-            message = "No quiet channels."
+            message = "No muted channels."
 
         embed = helpers.InfoEmbed(message)
 
@@ -61,10 +59,10 @@ class DevCog(commands.Cog, name="Dev"):
         Disconnects and closes Lil Hal Jr safely.
         :param ctx:
         """
-        # Response
+        # Response.
         common.emoji_confirmation(ctx.message)
 
-        # Go offline
+        # Go offline.
         await common.pause(1, 2)
         await self.bot.change_presence(status=discord.Status.offline)
 

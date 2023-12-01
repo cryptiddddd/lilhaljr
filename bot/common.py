@@ -5,6 +5,9 @@ import discord
 
 import helpers
 
+# ====================== VARS
+muted_channels = {}
+
 
 # ====================== SYNCHRONOUS FUNCTIONS
 def emoji_confirmation(message: discord.Message, thumbs_up: bool = True) -> None:
@@ -47,7 +50,7 @@ async def speak_in(channel: discord.TextChannel, message: str = None, **kwargs) 
     """
     Hal speaks in a channel.
     :param channel: Channel to speak in.
-    :param message: The content to send.
+    :param message: The content to send. Optional: if None, replaced by hmm/yes/interesting.
     :param kwargs: All keyword arguments are passed through `channel.send()`.
     :return:
     """
@@ -55,6 +58,7 @@ async def speak_in(channel: discord.TextChannel, message: str = None, **kwargs) 
     if not channel.can_send(discord.Message):
         return
 
+    # Generate dialogue.
     if message is None:
         message = helpers.basic()
 
@@ -63,3 +67,25 @@ async def speak_in(channel: discord.TextChannel, message: str = None, **kwargs) 
     await pause(0, (len(message) % 80) // 4)
 
     return await channel.send(message, **kwargs)
+
+
+async def introduce_self(channel: discord.TextChannel) -> None:
+    """
+    Hal sends an introduction to the given channel.
+    :param channel: Expected introduction channel.
+    :return: No return value
+    """
+    await pause(20, 25)
+    intro = "Hal\nHe/It\nI can quiet down when you tell me."
+
+    await speak_in(channel, intro)
+
+
+async def say_hello(channel: discord.TextChannel) -> None:
+    """
+    Hal says hello.
+    :param channel: Channel in which to say hello.
+    :return: No return value
+    """
+    await pause(5, 10)
+    await speak_in(channel, "Hello.")
