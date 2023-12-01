@@ -43,5 +43,6 @@ bad_words = [
     "cripple",
     "retard",
     "nigg",
-    "chink"
+    "chink",
+    "rape"
 ]
