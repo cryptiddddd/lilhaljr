@@ -210,7 +210,7 @@ class SocialCog(commands.Cog, name="Social"):
         coms = random.choices(command_list, k=random.randint(1, 3), weights=command_weights)
 
         for command in coms:
-            command_usage = command_prefix + command.capitalize()
+            command_usage = command_prefix + command.capitalize() + " "
 
             # Special command cases.
             if command == "explode":
@@ -225,13 +225,13 @@ class SocialCog(commands.Cog, name="Social"):
 
                 if len(targets) > 0:
                     mention = random.choice(targets)
-                    command_usage += " " + mention
+                    command_usage += mention.mention
 
             elif command == "punch":
-                command_usage += " " + channel.guild.get_member(config.TOASTY_ID).mention
+                command_usage += channel.guild.get_member(config.TOASTY_ID).mention
 
             elif command == "tarot" and not random.randint(0, 150):
-                command_usage += " " + helpers.existential_question()
+                command_usage += helpers.existential_question()
 
             await self.wait_until_quiet(channel)
             await common.speak_in(channel, command_usage)
