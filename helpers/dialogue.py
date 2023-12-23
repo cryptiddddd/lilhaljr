@@ -99,3 +99,36 @@ def disappointment() -> str:
 
     else:
         return "I am disappointed" + "." * random.randint(1, 6)
+    
+
+def random_word() -> str:
+    """ A completely random word, for spell-casting. """
+    return random.choice([
+        "magic",
+        "sit",
+        "heart",
+        "friendship",
+        "cheese",
+        "shrimp",
+        "meow",
+        "hope",
+        "frog",
+        "heart",
+        "explode",
+        "digital",
+        "computer",
+        "technology",
+        "digits",
+        "microchip",
+        "binary",
+        "code",
+        "simulation",
+        "electronic",
+        "mimic",
+        "clone",
+        "copy",
+        "evil",
+        "forget",
+        ".",
+        "machine"
+    ])

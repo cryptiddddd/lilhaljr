@@ -152,8 +152,8 @@ class SocialCog(commands.Cog, name="Social"):
         bot_info = [
             (config.CRANEBOT_ID, '%',
              ["pokemon", "beast", "catch", "explode", "meme", "tarot", "beef", "highfive", "pat", "dex",
-              "bestiary", "randomfact"],
-             [7, 7, 3, 7, 6, 5, 6, 4, 4, 1, 1, 6]),
+              "bestiary", "randomfact", "cast"],
+             [7, 7, 3, 7, 6, 5, 6, 4, 4, 1, 1, 6, 2]),
             (config.TOASTY_ID, ';', ["pokemon", "cat", "cow", "shrug", "lenny", "punch"])
         ]
 
@@ -204,7 +204,7 @@ class SocialCog(commands.Cog, name="Social"):
 
         def msg_check(m: discord.Message) -> bool:
             """ For checking that the command yields a response. """
-            return m.author.id == bot_id and m.channel == channel
+            return (m.author.id == bot_id or m.author.bot) and m.channel == channel
 
         # Use a couple commands, waiting for responses in between.
         coms = random.choices(command_list, k=random.randint(1, 3), weights=command_weights)
@@ -232,6 +232,9 @@ class SocialCog(commands.Cog, name="Social"):
 
             elif command == "tarot" and not random.randint(0, 150):
                 command_usage += helpers.existential_question()
+
+            elif command == "cast":
+                command_usage += helpers.random_word()
 
             await self.wait_until_quiet(channel)
             await common.speak_in(channel, command_usage)
