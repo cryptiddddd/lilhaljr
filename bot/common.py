@@ -64,7 +64,7 @@ async def speak_in(channel: discord.TextChannel, message: str = None, **kwargs) 
 
     # Send.
     await channel.trigger_typing()
-    await pause(0, (len(message) % 80) // 4)
+    await pause(0, (len(message) % 80) // 5)
 
     return await channel.send(message, **kwargs)
 

@@ -10,7 +10,6 @@ from bot import LilHalJr, common
 import config
 import helpers
 
-
 logger = logging.getLogger("lilhaljr")
 
 
@@ -18,6 +17,7 @@ class SocialCog(commands.Cog, name="Social"):
     """
     Hal will attempt to be a little more social with this cog.
     """
+
     def __init__(self, bot: LilHalJr):
         self.bot = bot
 
@@ -43,6 +43,7 @@ class SocialCog(commands.Cog, name="Social"):
         :param condition: A callable function that takes a text channel for input, and returns a bool
         :return: Suitable channel.
         """
+
         def name_check(ch: discord.TextChannel) -> bool:
             """ This ensures the given channel is appropriate to chat in. """
             return "intro" not in ch.name.lower() and "vent" not in ch.name.lower()
@@ -134,6 +135,27 @@ class SocialCog(commands.Cog, name="Social"):
         channel = channel[0]
         await common.say_hello(channel)
 
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message) -> None:
+        """
+        Certain social interactions on message.
+        """
+        if message.content.lower().startswith("%toast"):
+            print("toast happening...")
+
+            async def callback() -> None:
+                """ A callback for the Join instance to fire."""
+                await common.speak_in(message.channel, "%Toast")
+
+            async def complete() -> None:
+                """ A callback that returns when the Join can be deleted. """
+                await self.bot.wait_for("message",
+                                        check=lambda m: m.author.id == config.CRANEBOT_ID
+                                        and m.channel == message.channel)
+
+            # Create a custom event that
+            helpers.Join.get(message.channel, callback, complete).call()
+
     # @commands.Cog.listener()
     # async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
     #     """ When a general command error occurs. """
@@ -192,6 +214,7 @@ class SocialCog(commands.Cog, name="Social"):
         :param command_weights: Command weights, optional.
         :return: True if an interaction is attempted. False if not.
         """
+
         def check_online(c: discord.TextChannel) -> bool:
             """ A check that the bot is in a channel and online. """
             bot = c.guild.get_member(bot_id)
