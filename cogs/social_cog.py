@@ -241,14 +241,13 @@ class SocialCog(commands.Cog, name="Social"):
                 if not random.randint(0, 5) and (toasty := channel.guild.get_member(config.TOASTY_ID)):
                     targets = [toasty]
 
-                # Possible targets, anyone but self and Cranebot.
+                # Possible targets, anyone but self and Cranebot. Collect their mentions.
                 else:
                     targets = [m.author.mention async for m in channel.history(limit=3) if m.author.id not in
                                [config.CRANEBOT_ID, self.bot.user.id]]
 
                 if len(targets) > 0:
-                    mention = random.choice(targets)
-                    command_usage += mention.mention
+                    command_usage += random.choice(targets)
 
             elif command == "punch":
                 command_usage += channel.guild.get_member(config.TOASTY_ID).mention
