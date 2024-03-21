@@ -247,7 +247,7 @@ class SocialCog(commands.Cog, name="Social"):
                                [config.CRANEBOT_ID, self.bot.user.id]]
 
                 if len(targets) > 0:
-                    command_usage += random.choice(targets)
+                    command_usage += random.choice(targets).mention
 
             elif command == "punch":
                 command_usage += channel.guild.get_member(config.TOASTY_ID).mention
