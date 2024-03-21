@@ -243,7 +243,7 @@ class SocialCog(commands.Cog, name="Social"):
 
                 # Possible targets, anyone but self and Cranebot. Collect their mentions.
                 else:
-                    targets = [m.author.mention async for m in channel.history(limit=3) if m.author.id not in
+                    targets = [m.author async for m in channel.history(limit=3) if m.author.id not in
                                [config.CRANEBOT_ID, self.bot.user.id]]
 
                 if len(targets) > 0:
